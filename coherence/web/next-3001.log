@@ -1,0 +1,28 @@
+
+> coherence-web@0.1.0 dev
+> next dev --hostname 127.0.0.1 --port 3001
+
+   ▲ Next.js 15.5.18
+   - Local:        http://127.0.0.1:3001
+   - Network:      http://127.0.0.1:3001
+   - Environments: .env.local
+
+ ✓ Starting...
+ ✓ Ready in 2.9s
+ ○ Compiling /dashboard ...
+ ✓ Compiled /dashboard in 2.8s (653 modules)
+ GET /dashboard 500 in 4169ms
+ GET /dashboard 500 in 381ms
+ ✓ Compiled in 4.8s (667 modules)
+ ✓ Compiled in 1265ms (249 modules)
+ ✓ Compiled in 353ms (249 modules)
+ ✓ Compiled in 271ms (249 modules)
+ ✓ Compiled in 329ms (249 modules)
+ ✓ Compiled in 475ms (249 modules)
+ ✓ Compiled in 196ms (249 modules)
+ ✓ Compiled in 245ms (249 modules)
+ ✓ Compiled in 187ms (249 modules)
+ ✓ Compiled in 839ms (235 modules)
+ ✓ Compiled in 253ms (249 modules)
+ ✓ Compiled in 167ms (249 modules)
+[?25h

@@ -1,0 +1,64 @@
+[2026-05-28T00:23:56.532Z]  @firebase/firestore: Firestore (11.10.0_lite): RestConnection RPC 'RunQuery' 0x2aab6a02 failed with error:  [Error [FirebaseError]: Request failed with error: Missing or insufficient permissions.] {
+  code: 'permission-denied',
+  customData: undefined,
+  toString: [Function (anonymous)]
+} url:  https://firestore.googleapis.com/v1/projects/studio-4574323897-75b04/databases/(default)/documents:runQuery request: {
+  structuredQuery: {
+    from: [ { collectionId: 'patientCases' } ],
+    orderBy: [
+      { field: { fieldPath: 'updatedAt' }, direction: 'DESCENDING' },
+      { field: { fieldPath: '__name__' }, direction: 'DESCENDING' }
+    ]
+  }
+}
+ ⨯ [Error [FirebaseError]: Request failed with error: Missing or insufficient permissions.] {
+  code: 'permission-denied',
+  customData: undefined,
+  toString: [Function (anonymous)],
+  digest: '3446604106'
+}
+[2026-05-28T00:23:56.655Z]  @firebase/firestore: Firestore (11.10.0_lite): RestConnection RPC 'RunQuery' 0x2aab6a03 failed with error:  [Error [FirebaseError]: Request failed with error: Missing or insufficient permissions.] {
+  code: 'permission-denied',
+  customData: undefined,
+  toString: [Function (anonymous)]
+} url:  https://firestore.googleapis.com/v1/projects/studio-4574323897-75b04/databases/(default)/documents:runQuery request: {
+  structuredQuery: {
+    from: [ { collectionId: 'neuroRuns' } ],
+    orderBy: [
+      { field: { fieldPath: 'updatedAt' }, direction: 'DESCENDING' },
+      { field: { fieldPath: '__name__' }, direction: 'DESCENDING' }
+    ]
+  }
+}
+[2026-05-28T00:24:11.786Z]  @firebase/firestore: Firestore (11.10.0_lite): RestConnection RPC 'RunQuery' 0x2aab6a04 failed with error:  [Error [FirebaseError]: Request failed with error: Missing or insufficient permissions.] {
+  code: 'permission-denied',
+  customData: undefined,
+  toString: [Function (anonymous)]
+} url:  https://firestore.googleapis.com/v1/projects/studio-4574323897-75b04/databases/(default)/documents:runQuery request: {
+  structuredQuery: {
+    from: [ { collectionId: 'patientCases' } ],
+    orderBy: [
+      { field: { fieldPath: 'updatedAt' }, direction: 'DESCENDING' },
+      { field: { fieldPath: '__name__' }, direction: 'DESCENDING' }
+    ]
+  }
+}
+ ⨯ [Error [FirebaseError]: Request failed with error: Missing or insufficient permissions.] {
+  code: 'permission-denied',
+  customData: undefined,
+  toString: [Function (anonymous)],
+  digest: '3446604106'
+}
+[2026-05-28T00:24:11.861Z]  @firebase/firestore: Firestore (11.10.0_lite): RestConnection RPC 'RunQuery' 0x2aab6a05 failed with error:  [Error [FirebaseError]: Request failed with error: Missing or insufficient permissions.] {
+  code: 'permission-denied',
+  customData: undefined,
+  toString: [Function (anonymous)]
+} url:  https://firestore.googleapis.com/v1/projects/studio-4574323897-75b04/databases/(default)/documents:runQuery request: {
+  structuredQuery: {
+    from: [ { collectionId: 'neuroRuns' } ],
+    orderBy: [
+      { field: { fieldPath: 'updatedAt' }, direction: 'DESCENDING' },
+      { field: { fieldPath: '__name__' }, direction: 'DESCENDING' }
+    ]
+  }
+}
