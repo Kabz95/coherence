@@ -1,0 +1,22 @@
+fastapi
+uvicorn
+google-cloud-storage
+google-cloud-firestore
+firebase-admin
+pydantic
+numpy
+pandas
+scipy
+nibabel
+pydicom
+mne
+pyedflib
+dipy
+matplotlib
+Pillow
+
+# Heavy processor notes:
+# HD-BET may need installation from its GitHub source and model handling.
+# FastSurfer may require a dedicated Docker setup and license/model handling.
+# dcm2niix is installed through apt in the Dockerfile when available.
+# MRtrix3 and FSL eddy/topup are optional future additions and should not break the base build.

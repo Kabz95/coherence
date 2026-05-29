@@ -1,0 +1,49 @@
+{
+  "hosting": {
+    "public": "web/out",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "rewrites": [
+      {
+        "source": "/dashboard",
+        "destination": "/dashboard.html"
+      },
+      {
+        "source": "/cases",
+        "destination": "/cases.html"
+      },
+      {
+        "source": "/upload",
+        "destination": "/upload.html"
+      },
+      {
+        "source": "/sign-in",
+        "destination": "/sign-in.html"
+      },
+      {
+        "source": "/sign-up",
+        "destination": "/sign-up.html"
+      },
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ]
+  },
+  "functions": [
+    {
+      "source": "functions",
+      "codebase": "coherence-orchestrator",
+      "runtime": "nodejs22"
+    }
+  ],
+  "firestore": {
+    "rules": "firestore.rules"
+  },
+  "storage": {
+    "rules": "storage.rules"
+  }
+}
