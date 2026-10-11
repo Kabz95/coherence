@@ -1,0 +1,12 @@
+node_modules/
+.next/
+out/
+.firebase/
+*.log
+.env
+.env.local
+.env.production
+serviceAccountKey.json
+firebase-adminsdk*.json
+web.zip
+.DS_Store

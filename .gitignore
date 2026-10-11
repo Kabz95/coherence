@@ -1,0 +1,14 @@
+# Root-level ignores for the Coherence monorepo layout.
+node_modules/
+.next/
+out/
+dist/
+build/
+*.log
+.env
+.env.local
+.env.*.local
+.DS_Store
+.firebase/
+serviceAccountKey.json
+firebase-adminsdk*.json

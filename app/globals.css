@@ -1,0 +1,37 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background: #050813;
+  color: #e5edf7;
+}
+
+a {
+  text-decoration: none;
+}
+
+@keyframes progress {
+  0% {
+    transform: translateX(-120%);
+  }
+  50% {
+    transform: translateX(130%);
+  }
+  100% {
+    transform: translateX(360%);
+  }
+}

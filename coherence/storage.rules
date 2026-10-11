@@ -1,0 +1,17 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    match /cases/{caseId}/runs/{runId}/inputs/{fileName} {
+      allow read, write: if signedIn();
+      allow delete: if signedIn();
+    }
+
+    // TODO: Replace broad authenticated access with clinician role and case-assignment checks
+    // before storing PHI or using Coherence in a production clinical workflow.
+  }
+}
