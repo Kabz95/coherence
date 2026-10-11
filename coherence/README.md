@@ -187,3 +187,39 @@ Build, push, and update jobs from Windows PowerShell:
 ```
 
 If a run shows `Backend jobs not provisioned`, the Firebase orchestrator could not find one or more Cloud Run Jobs in the expected region. Provision the missing jobs, then start the run again.
+
+## Pipeline Implementations
+
+Every job in `backend/jobs/` is a real, runnable implementation (`run(context) -> JobManifest`), not a placeholder. All methods are standard, honestly labelled, and non-diagnostic: measurements carry their method and limitations in the manifest evidence ledger, and the report builder runs a clinical-safety copy scan before finalizing.
+
+**Shared** (`jobs/imaging.py`): temp workspaces, GCS artifact upload/download, NIfTI load/RAS-reorient, Otsu thresholding, rough brain masking (Otsu + largest component + hole fill — a volume *estimate*, not a segmentation), hemisphere splitting, slice-montage / trace / spectrogram renderers, and upstream-manifest chaining.
+
+| Job | What it really does |
+| --- | --- |
+| `converter` | NIfTI validation + RAS reorient + float32; DICOM ZIP via dcm2niix (or best-effort pydicom slice stacking); single DICOM slice support |
+| `qc` | Header checks, NaN/Inf/zero-fraction, intensity stats, axial slice-dropout detection, SNR proxy inside rough mask; per-file pass/warn/fail |
+| `structural_prep` | Percentile intensity normalization + rough brain mask → `prepped-t1.nii.gz`, `brain-mask.nii.gz` |
+| `structural_analysis` | Mask volumetry: total/hemisphere volumes (mL), mean mask intensity, with per-metric method + limitations |
+| `structural_3d_prep` | Slice montage PNG, orthogonal-MIP volume preview PNG, downsampled NIfTI for the future viewer |
+| `diffusion_prep` | bval/bvec validation (volume counts, unit vectors, b0 presence), b0 rough mask |
+| `diffusion_analysis` | DIPY single-tensor DTI fit → FA/MD/AD/RD maps + whole-mask means (no eddy correction; recorded as a limitation) |
+| `diffusion_3d_prep` | FA montage preview |
+| `eeg_ingest` | EDF/BDF via MNE (CSV fallback): channel inventory, sampling rate, duration |
+| `eeg_prep` | Band-pass 1–40 Hz, 50/60 Hz notch, resample ≤250 Hz, variance-based bad-channel flagging (MNE or scipy path) |
+| `eeg_analysis` | Welch PSD → relative delta/theta/alpha/beta/gamma band powers per channel |
+| `eeg_visualization_prep` | Multi-channel trace PNG + mean-PSD spectrogram PNG |
+| `coregistration` | Affine resampling of a moving image into reference space (nibabel); not a nonlinear registration |
+| `longitudinal_analysis` | Deltas vs the most recent comparable prior run of the same case, with comparability notes |
+| `report_builder` | Aggregates all manifests → `outputs.structural`, `outputs.visualizationAssets`, `outputs.evidenceLedger`, and the run `report`; publishes them to Firestore |
+
+Cortical thickness and subcortical segmentation are deliberately **not** fabricated — they require surface reconstruction (e.g. FastSurfer) and are absent from the metrics rather than estimated.
+
+### Offline pipeline smoke test
+
+`backend/tests/smoke_test.py` generates synthetic data (T1 phantom, DWI + bval/bvec, EEG CSV) and runs all three chains end to end without Google credentials (GCS/Firestore calls fall back to `backend/local_outputs/`):
+
+```bash
+cd backend
+python tests/smoke_test.py            # full-size synthetic data
+python tests/smoke_test.py --quick    # smaller, faster
+```

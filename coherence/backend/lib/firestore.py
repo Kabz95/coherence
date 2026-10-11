@@ -27,3 +27,24 @@ def get_run(project_id: str, collection: str, run_id: str) -> dict[str, Any] | N
     except Exception as exc:
         log_event("firestore.get_failed", collection=collection, runId=run_id, error=str(exc))
         return None
+
+
+def list_runs_for_case(project_id: str, collection: str, case_id: str) -> list[dict[str, Any]]:
+    """List all run documents for a case (used by longitudinal analysis)."""
+    try:
+        docs = (
+            get_client(project_id)
+            .collection(collection)
+            .where("caseId", "==", case_id)
+            .stream()
+        )
+        runs = []
+        for doc in docs:
+            data = doc.to_dict() or {}
+            data["id"] = doc.id
+            runs.append(data)
+        log_event("firestore.list_runs_for_case", collection=collection, caseId=case_id, count=len(runs))
+        return runs
+    except Exception as exc:
+        log_event("firestore.list_failed", collection=collection, caseId=case_id, error=str(exc))
+        return []

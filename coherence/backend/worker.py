@@ -163,20 +163,32 @@ def main() -> int:
         path = manifest_path(config.run_id, config.job_kind, case_id)
         manifest.outputs["manifestPath"] = path
         write_json(config.gcs_bucket, path, manifest.to_dict())
-        overall_status = "completed" if config.job_kind == "report_builder" and manifest.status == "completed" else "running"
-        if manifest.status != "completed":
+
+        if manifest.status == "completed":
+            # Only the report builder finishes a run; every other job hands off
+            # to the next stage in the pipeline.
+            finished = config.job_kind == "report_builder"
+            overall_status = "completed" if finished else "running"
+            current_stage = "Report ready" if finished else config.job_kind
+            stage_status = "completed"
+            stage_error = None
+        else:
             overall_status = "failed"
+            current_stage = config.job_kind
+            stage_status = "failed"
+            stage_error = "; ".join(manifest.errors) if manifest.errors else None
+
         run_update_with_stage(
             config,
             run_doc,
             {
                 "status": overall_status,
-                "currentStage": "Report ready" if overall_status == "completed" else config.job_kind,
+                "currentStage": current_stage,
                 "updatedAt": utc_now(),
                 "outputs": {config.job_kind: {"manifestPath": path, "status": manifest.status}},
             },
-            "completed" if manifest.status == "completed" else "failed",
-            "; ".join(manifest.errors) if manifest.errors else None,
+            stage_status,
+            stage_error,
         )
         log_event("worker.complete", jobKind=config.job_kind, runId=config.run_id, manifestPath=path, status=manifest.status)
         return 0 if manifest.status == "completed" else 1
