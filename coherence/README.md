@@ -199,15 +199,19 @@ Every job in `backend/jobs/` is a real, runnable implementation (`run(context) -
 | `converter` | NIfTI validation + RAS reorient + float32; DICOM ZIP via dcm2niix (or best-effort pydicom slice stacking); single DICOM slice support |
 | `qc` | Header checks, NaN/Inf/zero-fraction, intensity stats, axial slice-dropout detection, SNR proxy inside rough mask; per-file pass/warn/fail |
 | `structural_prep` | Percentile intensity normalization + rough brain mask → `prepped-t1.nii.gz`, `brain-mask.nii.gz` |
-| `structural_analysis` | Mask volumetry: total/hemisphere volumes (mL), mean mask intensity, with per-metric method + limitations |
+| `structural_analysis` | Mask volumetry: total/hemisphere volumes (mL), mean mask intensity, with per-metric method + limitations. **FastSurfer hook**: when `run_fastsurfer.sh` is installed, segmentation-only FastSurfer runs and `aseg.stats` upgrades the intracranial volume; otherwise the built-in is kept with a warning |
 | `structural_3d_prep` | Slice montage PNG, orthogonal-MIP volume preview PNG, downsampled NIfTI for the future viewer |
 | `diffusion_prep` | bval/bvec validation (volume counts, unit vectors, b0 presence), b0 rough mask |
 | `diffusion_analysis` | DIPY single-tensor DTI fit → FA/MD/AD/RD maps + whole-mask means (no eddy correction; recorded as a limitation) |
 | `diffusion_3d_prep` | FA montage preview |
-| `eeg_ingest` | EDF/BDF via MNE (CSV fallback): channel inventory, sampling rate, duration |
-| `eeg_prep` | Band-pass 1–40 Hz, 50/60 Hz notch, resample ≤250 Hz, variance-based bad-channel flagging (MNE or scipy path) |
-| `eeg_analysis` | Welch PSD → relative delta/theta/alpha/beta/gamma band powers per channel |
-| `eeg_visualization_prep` | Multi-channel trace PNG + mean-PSD spectrogram PNG |
+| `fmri_ingest` | 4D BOLD validation; TR from BIDS sidecar `RepetitionTime` or run metadata |
+| `fmri_prep` | DVARS + tSNR QC, CompCor-lite denoise (detrend, top-5 high-variance PCs, 0.01–0.1 Hz band-pass). No motion/distortion correction (fMRIPrep is the reference) |
+| `fmri_analysis` | ALFF / fALFF maps (0.01–0.08 Hz FFT amplitude) + whole-mask means |
+| `fmri_visualization_prep` | Carpet plot PNG + mean-BOLD montage |
+| `eeg_ingest` / `meg_ingest` | EDF/BDF/CSV (EEG) or FIF/DS/CSV (MEG) via MNE; channel inventory, sampling rate, duration |
+| `eeg_prep` / `meg_prep` | Band-pass 1–40 Hz, 50/60 Hz notch, resample ≤250 Hz, variance-based bad-channel flagging (MNE or scipy path) |
+| `eeg_analysis` / `meg_analysis` | Welch PSD → relative delta/theta/alpha/beta/gamma band powers per channel |
+| `eeg_visualization_prep` / `meg_visualization_prep` | Multi-channel trace PNG + mean-PSD spectrogram PNG |
 | `coregistration` | Affine resampling of a moving image into reference space (nibabel); not a nonlinear registration |
 | `longitudinal_analysis` | Deltas vs the most recent comparable prior run of the same case, with comparability notes |
 | `report_builder` | Aggregates all manifests → `outputs.structural`, `outputs.visualizationAssets`, `outputs.evidenceLedger`, and the run `report`; publishes them to Firestore |
@@ -223,3 +227,14 @@ cd backend
 python tests/smoke_test.py            # full-size synthetic data
 python tests/smoke_test.py --quick    # smaller, faster
 ```
+
+Covers all five modality chains (structural, diffusion, EEG, fMRI, MEG) with
+synthetic data: T1 phantom, DWI + bval/bvec, EEG CSV, BOLD + BIDS sidecar,
+MEG FIF (via MNE).
+
+The canonical per-modality pipeline map lives in `backend/jobs/pipelines.py`:
+sMRI → FastSurfer/FreeSurfer, dMRI → QSIPrep/MRtrix3/DIPY, fMRI →
+fMRIPrep/Nilearn, EEG/MEG → MNE-Python/MNE-BIDS-Pipeline — each entry
+carrying its implementation status (`implemented` / `partial` / `proposed`)
+and license notes, per the Architecture Blueprint (`docs/coherence-architecture-blueprint-v1.0.docx`,
+Part II Chapters 4–5 and the reuse matrix).

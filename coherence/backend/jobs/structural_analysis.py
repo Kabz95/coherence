@@ -106,6 +106,7 @@ def run(context) -> object:
     }
 
     prefix = gcs_prefix(context, "structural_analysis")
+    _maybe_run_fastsurfer(context, manifest, metrics, methods, work)
     payload = {"metrics": metrics, "methods": methods}
     write_json(context.config.gcs_bucket, f"{prefix}/summary-metrics.json", payload)
     manifest.outputs["summaryMetricsJson"] = f"{prefix}/summary-metrics.json"
@@ -119,3 +120,64 @@ def run(context) -> object:
                 unit="mL" if key.endswith("Ml") else None,
             )
     return manifest.complete()
+
+
+def _maybe_run_fastsurfer(context, manifest, metrics: dict, methods: dict, work) -> None:
+    """Optional FastSurfer hook (Blueprint Ch. 13).
+
+    If ``run_fastsurfer.sh`` is installed in the image, run segmentation-only
+    FastSurfer on the prepped T1 and upgrade the volume metrics with real
+    segmentation outputs parsed from ``stats/aseg.stats``. Any failure falls
+    back to the built-in mask volumetry with a warning — never a crash.
+    """
+    from jobs.common import binary_available
+
+    if not binary_available("run_fastsurfer.sh"):
+        manifest.warnings.append("FastSurfer not installed; using built-in mask volumetry (no cortical thickness).")
+        return
+
+    import re
+    import subprocess
+
+    t1_path = work / "fastsurfer-input.nii.gz"
+    try:
+        import nibabel as nib  # noqa: F401  (kept for future surface handling)
+
+        from jobs.imaging import fetch_artifact, load_nifti, upstream_manifest_outputs
+
+        prep = upstream_manifest_outputs(context, "structural_prep")
+        prepped_ref = (prep or {}).get("preppedT1")
+        if not prepped_ref:
+            raise RuntimeError("no prepped T1 available")
+        fetch_artifact(prepped_ref, t1_path, context.config.gcs_bucket)
+        img, _ = load_nifti(t1_path)
+
+        out_dir = work / "fastsurfer"
+        result = subprocess.run(
+            ["run_fastsurfer.sh", "--seg_only", "--t1", str(t1_path), "--sd", str(out_dir), "--sid", "subject"],
+            capture_output=True, text=True, timeout=3600,
+        )
+        stats_path = out_dir / "subject" / "stats" / "aseg.stats"
+        if result.returncode != 0 or not stats_path.exists():
+            raise RuntimeError(f"FastSurfer seg_only failed: {result.stderr[-1000:]}")
+
+        parsed: dict[str, float] = {}
+        for line in stats_path.read_text().splitlines():
+            m = re.match(r"#\s*Measure\s+(\S+),?\s+([\d.eE+-]+)", line)
+            if m:
+                parsed[m.group(1)] = float(m.group(2))
+
+        upgraded = False
+        if "EstimatedTotalIntraCranialVol" in parsed:
+            metrics["totalIntracranialVolumeMl"] = round(parsed["EstimatedTotalIntraCranialVol"] / 1000.0, 2)
+            methods["totalIntracranialVolumeMl"] = {
+                "method": "FastSurfer segmentation (aseg.stats EstimatedTotalIntraCranialVol)",
+                "limitations": "Segmentation quality depends on acquisition; review before longitudinal comparison.",
+            }
+            upgraded = True
+        manifest.outputs["fastSurferStats"] = str(stats_path)
+        manifest.outputs["fastSurferUsed"] = upgraded
+        if upgraded:
+            manifest.warnings.append("FastSurfer segmentation available; total intracranial volume upgraded from segmentation.")
+    except Exception as exc:
+        manifest.warnings.append(f"FastSurfer hook failed ({exc}); kept built-in mask volumetry.")

@@ -39,6 +39,14 @@ UPSTREAM_JOBS = [
     "eeg_prep",
     "eeg_analysis",
     "eeg_visualization_prep",
+    "meg_ingest",
+    "meg_prep",
+    "meg_analysis",
+    "meg_visualization_prep",
+    "fmri_ingest",
+    "fmri_prep",
+    "fmri_analysis",
+    "fmri_visualization_prep",
     "coregistration",
     "longitudinal_analysis",
 ]
@@ -86,7 +94,7 @@ def run(context) -> object:
             except Exception as exc:
                 manifest.warnings.append(f"Could not read structural summary: {exc}")
 
-        if job_kind in ("structural_3d_prep", "diffusion_3d_prep", "eeg_visualization_prep"):
+        if job_kind in ("structural_3d_prep", "diffusion_3d_prep", "eeg_visualization_prep", "meg_visualization_prep", "fmri_visualization_prep"):
             assets = outs.get("visualizationAssets") or {}
             visualization_assets.update(assets)
 

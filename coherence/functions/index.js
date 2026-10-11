@@ -16,8 +16,8 @@ const GPU_REGION = "us-east4";
 const ALL_JOB_REGIONS = [CPU_REGION, GPU_REGION];
 
 const JOBS = {
-  converter: { jobNames: ["coherence-converter", "job-converter"], regions: [CPU_REGION], modalities: ["structural_mri", "diffusion_mri", "eeg", "multimodal"] },
-  qc: { jobNames: ["coherence-qc", "job-qc"], regions: [CPU_REGION], modalities: ["structural_mri", "diffusion_mri", "eeg", "multimodal"] },
+  converter: { jobNames: ["coherence-converter", "job-converter"], regions: [CPU_REGION], modalities: ["structural_mri", "diffusion_mri", "eeg", "meg", "fmri", "multimodal"] },
+  qc: { jobNames: ["coherence-qc", "job-qc"], regions: [CPU_REGION], modalities: ["structural_mri", "diffusion_mri", "eeg", "meg", "fmri", "multimodal"] },
   structural_prep: { jobNames: ["coherence-structural-prep", "job-structural-prep"], regions: [GPU_REGION, CPU_REGION], modalities: ["structural_mri", "multimodal"] },
   structural_analysis: { jobNames: ["coherence-structural-analysis", "job-structural-analysis"], regions: [GPU_REGION, CPU_REGION], modalities: ["structural_mri", "multimodal"] },
   structural_3d_prep: { jobNames: ["coherence-structural-3d-prep", "job-structural-3d-prep"], regions: [GPU_REGION, CPU_REGION], modalities: ["structural_mri", "multimodal"] },
@@ -28,9 +28,17 @@ const JOBS = {
   eeg_prep: { jobNames: ["coherence-eeg-prep", "job-eeg-prep"], regions: [CPU_REGION], modalities: ["eeg", "multimodal"] },
   eeg_analysis: { jobNames: ["coherence-eeg-analysis", "job-eeg-analysis"], regions: [CPU_REGION], modalities: ["eeg", "multimodal"] },
   eeg_visualization_prep: { jobNames: ["coherence-eeg-visualization-prep", "job-eeg-visualization-prep"], regions: [CPU_REGION], modalities: ["eeg", "multimodal"] },
-  longitudinal_analysis: { jobNames: ["coherence-longitudinal-analysis", "job-longitudinal-analysis"], regions: [CPU_REGION], modalities: ["structural_mri", "diffusion_mri", "eeg", "multimodal"] },
+  meg_ingest: { jobNames: ["coherence-meg-ingest", "job-meg-ingest"], regions: [CPU_REGION], modalities: ["meg", "multimodal"] },
+  meg_prep: { jobNames: ["coherence-meg-prep", "job-meg-prep"], regions: [CPU_REGION], modalities: ["meg", "multimodal"] },
+  meg_analysis: { jobNames: ["coherence-meg-analysis", "job-meg-analysis"], regions: [CPU_REGION], modalities: ["meg", "multimodal"] },
+  meg_visualization_prep: { jobNames: ["coherence-meg-visualization-prep", "job-meg-visualization-prep"], regions: [CPU_REGION], modalities: ["meg", "multimodal"] },
+  fmri_ingest: { jobNames: ["coherence-fmri-ingest", "job-fmri-ingest"], regions: [CPU_REGION], modalities: ["fmri", "multimodal"] },
+  fmri_prep: { jobNames: ["coherence-fmri-prep", "job-fmri-prep"], regions: [CPU_REGION], modalities: ["fmri", "multimodal"] },
+  fmri_analysis: { jobNames: ["coherence-fmri-analysis", "job-fmri-analysis"], regions: [CPU_REGION], modalities: ["fmri", "multimodal"] },
+  fmri_visualization_prep: { jobNames: ["coherence-fmri-visualization-prep", "job-fmri-visualization-prep"], regions: [CPU_REGION], modalities: ["fmri", "multimodal"] },
+  longitudinal_analysis: { jobNames: ["coherence-longitudinal-analysis", "job-longitudinal-analysis"], regions: [CPU_REGION], modalities: ["structural_mri", "diffusion_mri", "eeg", "meg", "fmri", "multimodal"] },
   coregistration: { jobNames: ["coherence-coregistration", "job-coregistration"], regions: [CPU_REGION, GPU_REGION], modalities: ["multimodal"] },
-  report_builder: { jobNames: ["coherence-report-builder", "job-report-builder"], regions: [CPU_REGION], modalities: ["structural_mri", "diffusion_mri", "eeg", "multimodal"] },
+  report_builder: { jobNames: ["coherence-report-builder", "job-report-builder"], regions: [CPU_REGION], modalities: ["structural_mri", "diffusion_mri", "eeg", "meg", "fmri", "multimodal"] },
 };
 
 const ACTIVE_STAGE_STATUSES = new Set(["running"]);
@@ -251,7 +259,7 @@ async function startPipelineForRun(runId, requestedByUid) {
     return launchNextStageForRun(runId, requestedByUid);
   }
 
-  if (!["structural_mri", "diffusion_mri", "eeg", "multimodal"].includes(modality)) {
+  if (!["structural_mri", "diffusion_mri", "eeg", "meg", "fmri", "multimodal"].includes(modality)) {
     throw new HttpsError("failed-precondition", `Run ${runId} has unsupported modality '${modality}'.`);
   }
 
@@ -273,7 +281,7 @@ async function launchNextStageForRun(runId, requestedByUid) {
   const modality = run.modality;
   const caseId = run.caseId;
 
-  if (!["structural_mri", "diffusion_mri", "eeg", "multimodal"].includes(modality)) {
+  if (!["structural_mri", "diffusion_mri", "eeg", "meg", "fmri", "multimodal"].includes(modality)) {
     throw new HttpsError("failed-precondition", `Run ${runId} has unsupported modality '${modality}'.`);
   }
 

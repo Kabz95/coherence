@@ -1,13 +1,17 @@
 """Offline smoke test for the Coherence backend pipelines.
 
-Generates synthetic data (T1 phantom, DWI + bval/bvec, EEG CSV) and runs the
-full job chains with a fake context:
+Generates synthetic data (T1 phantom, DWI + bval/bvec, EEG CSV, BOLD + BIDS
+sidecar, MEG FIF) and runs the full job chains with a fake context:
 
     structural: converter -> qc -> structural_prep -> structural_analysis
                 -> structural_3d_prep -> report_builder
     diffusion:  diffusion_prep -> diffusion_analysis -> diffusion_3d_prep
                 (requires dipy)
     eeg:        eeg_ingest -> eeg_prep -> eeg_analysis -> eeg_visualization_prep
+    fmri:       converter -> fmri_ingest -> fmri_prep -> fmri_analysis
+                -> fmri_visualization_prep
+    meg:        meg_ingest -> meg_prep -> meg_analysis -> meg_visualization_prep
+                (requires mne)
 
 GCS/Firestore calls fall back to local_outputs/ and log warnings, so the test
 runs fully offline. Run from backend/:  python tests/smoke_test.py [--quick]
@@ -98,7 +102,38 @@ def make_synthetic_data(out_dir: Path) -> dict:
     header = "time,Cz,Fz,Pz,Oz"
     np.savetxt(out_dir / "eeg.csv", eeg, delimiter=",", header=header, comments="", fmt="%.6f")
 
-    return {"t1": t1_path, "dwi": dwi_path, "eeg": out_dir / "eeg.csv"}
+    # --- Synthetic BOLD: 4D resting-state with low-frequency fluctuations ---
+    bshape = (16, 16, 8, 60) if not QUICK else (12, 12, 6, 40)
+    n_t = bshape[3]
+    tr = 2.0
+    t_bold = np.arange(n_t) * tr
+    base = 100.0 + rng.normal(0, 4, size=bshape[:3])[..., None]
+    slow_field = np.sin(2 * np.pi * 0.05 * t_bold)[None, None, None, :] * rng.normal(0, 3, size=bshape[:3])[..., None]
+    bold = (base + 5.0 * slow_field + rng.normal(0, 2, size=bshape)).astype(np.float32)
+    nib.save(nib.Nifti1Image(bold, np.eye(4)), str(out_dir / "bold.nii.gz"))
+    import json as _json
+
+    (out_dir / "bold.json").write_text(_json.dumps({"RepetitionTime": tr, "TaskName": "rest"}))
+
+    # --- Synthetic MEG: MNE RawArray, magnetometers ---
+    try:
+        import mne
+
+        sfreq_meg, seconds_meg = 200.0, 10.0
+        t_meg = np.arange(0, seconds_meg, 1 / sfreq_meg)
+        ch_names = [f"MEG{k:04d}" for k in (111, 112, 121, 122, 131, 132)]
+        meg_data = np.array([
+            1e-13 * np.sin(2 * np.pi * 10 * t_meg) + 1e-14 * rng.normal(size=t_meg.size)
+            for _ in ch_names
+        ])
+        info = mne.create_info(ch_names=ch_names, sfreq=sfreq_meg, ch_types="mag")
+        raw_meg = mne.io.RawArray(meg_data, info, verbose="ERROR")
+        raw_meg.save(out_dir / "meg.fif", overwrite=True, verbose="ERROR")
+        meg_path = out_dir / "meg.fif"
+    except ImportError:
+        meg_path = None
+
+    return {"t1": t1_path, "dwi": dwi_path, "eeg": out_dir / "eeg.csv", "bold": out_dir / "bold.nii.gz", "meg": meg_path}
 
 
 def run_chain(job_kinds: list[str], run_doc: dict, label: str) -> dict:
@@ -183,6 +218,21 @@ def main() -> int:
     run_doc_eeg["modality"] = "eeg"
     run_chain(["eeg_ingest", "eeg_prep", "eeg_analysis", "eeg_visualization_prep"], run_doc_eeg, "eeg")
     print("eeg outputs registered:", sorted(run_doc_eeg.get("outputs", {}).keys()))
+
+    # fMRI chain
+    run_doc_fmri = fresh_run_doc(["bold.nii.gz", "bold.json"])
+    run_doc_fmri["modality"] = "fmri"
+    run_chain(["converter", "fmri_ingest", "fmri_prep", "fmri_analysis", "fmri_visualization_prep"], run_doc_fmri, "fmri")
+    print("fmri outputs registered:", sorted(run_doc_fmri.get("outputs", {}).keys()))
+
+    # MEG chain
+    if inputs["meg"] is not None:
+        run_doc_meg = fresh_run_doc(["meg.fif"])
+        run_doc_meg["modality"] = "meg"
+        run_chain(["meg_ingest", "meg_prep", "meg_analysis", "meg_visualization_prep"], run_doc_meg, "meg")
+        print("meg outputs registered:", sorted(run_doc_meg.get("outputs", {}).keys()))
+    else:
+        print("[meg] skipped: mne not installed")
 
     print("SMOKE RESULT:", "FAIL" if failures else "PASS")
     return 1 if failures else 0
