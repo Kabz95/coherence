@@ -1,13 +1,14 @@
 # Coherence — Symposium Demo Playbook
 
-This build is **structural-MRI-first**: a polished structural MRI + clinical
-context + longitudinal review prototype. Diffusion, EEG, and multimodal tabs
-are visible only as marked **Roadmap** items — do not try to demo them live.
+This build covers **all five brain-data pipelines**: structural MRI, diffusion
+MRI, fMRI, EEG, and MEG. Multimodal orchestration remains a marked **Roadmap**
+item. The live demo site is published at
+**https://kabz95.github.io/coherence/** (static export of the demo mode).
 
 ## Zero-config rehearsal
 
 No Firebase setup is needed. With no `NEXT_PUBLIC_FIREBASE_*` values present,
-the app runs in **demo mode** with three seeded cases:
+the app runs in **demo mode** with seven seeded cases:
 
 ```bash
 cd coherence/web
@@ -16,8 +17,32 @@ npm run dev
 # open the forwarded port 3000
 ```
 
+Seeded demo cases: A-104 (structural, two longitudinal timepoints), B-217
+(live structural pipeline), C-309 (empty state), D-528 (diffusion), E-639
+(fMRI), F-741 (EEG), G-852 (MEG). All measurements and viewer images are
+fictional demo content.
+
 To use live Firebase instead, copy `.env.local.example` to `.env.local`,
 fill in the values, and restart the dev server.
+
+## Republishing the demo site
+
+The public demo is a static export on the `gh-pages` branch, built from
+`coherence/web`:
+
+```bash
+cd coherence/web
+COHERENCE_STATIC_EXPORT=1 COHERENCE_BASE_PATH=/coherence npm run build
+rm -rf /tmp/coherence-pages && git clone -q ~/workspace/coherence/coherence-main /tmp/coherence-pages
+cd /tmp/coherence-pages && git checkout --orphan gh-pages
+git rm -rf . && cp -r ~/workspace/coherence/coherence-main/coherence/web/out/. .
+touch .nojekyll && git add -A && git commit -m "Coherence demo site (static export)"
+git remote set-url origin https://github.com/Kabz95/coherence.git
+git push -f origin gh-pages
+```
+
+GitHub Pages is configured (repo Settings → Pages) to serve `gh-pages` at
+`https://kabz95.github.io/coherence/`.
 
 ## The demo click path (one clean narrative)
 
