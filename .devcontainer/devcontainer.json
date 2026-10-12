@@ -1,1 +1,27 @@
-{"customizations":{"vscode":{"extensions":["bradlc.vscode-tailwindcss","esbenp.prettier-vscode"]}},"forwardPorts":[3000],"image":"mcr.microsoft.com/devcontainers/typescript-node:22","name":"Coherence web","portsAttributes":{"3000":{"label":"Coherence web (Next.js)","onAutoForward":"notify"}},"postCreateCommand":"cd coherence/web && npm install","postStartCommand":"echo 'Run: cd coherence/web && npm run dev  (then open the forwarded port 3000)'","remoteEnv":{"NEXT_TELEMETRY_DISABLED":"1"},"workspaceFolder":"/workspaces/${localWorkspaceFolderBasename}"}
+{
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "bradlc.vscode-tailwindcss",
+        "esbenp.prettier-vscode"
+      ]
+    }
+  },
+  "forwardPorts": [
+    3000
+  ],
+  "image": "mcr.microsoft.com/devcontainers/typescript-node:22",
+  "name": "Coherence web",
+  "portsAttributes": {
+    "3000": {
+      "label": "Coherence web (Next.js)",
+      "onAutoForward": "notify"
+    }
+  },
+  "postCreateCommand": "cd coherence/web && npm install",
+  "postStartCommand": "cd coherence/web && (ls .next >/dev/null 2>&1 || npm run build) && (nohup npm start -- -p 3000 > /tmp/coherence-server.log 2>&1 < /dev/null & echo 'Coherence web auto-started on port 3000')",
+  "remoteEnv": {
+    "NEXT_TELEMETRY_DISABLED": "1"
+  },
+  "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}"
+}
