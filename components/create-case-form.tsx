@@ -8,7 +8,7 @@ import { ProgressBar } from "./progress-bar";
 
 export function CreateCaseForm() {
   const router = useRouter();
-  const { user } = useAuth();
+  const { identityEmail } = useAuth();
   const [displayName, setDisplayName] = useState("");
   const [birthYear, setBirthYear] = useState("");
   const [sex, setSex] = useState("");
@@ -20,7 +20,7 @@ export function CreateCaseForm() {
     event.preventDefault();
     setMessage("");
 
-    if (!user) {
+    if (!identityEmail) {
       setMessage("Please sign in before creating a case.");
       return;
     }

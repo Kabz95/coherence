@@ -1,13 +1,20 @@
+import { isDemoMode } from "./demo";
 import { getFirebaseServices, isFirebaseConfigured } from "./firebase";
 import { buildStagesForModality } from "./job-map";
 import { mockRuns } from "./mock-data";
-import type { ClinicalContext, InputFile, Modality, NeuroRun, RunStatus } from "./types";
+import type { ClinicalContext, ClinicalNote, InputFile, Modality, NeuroRun, RunStatus } from "./types";
 
 function nowIso(): string {
   return new Date().toISOString();
 }
 
+function isOrchestratorStage(stage: NeuroRun["stages"][number]): boolean {
+  return stage.id?.startsWith("orchestrator") || stage.jobName === "coherence-pipeline-orchestrator";
+}
+
 function normalizeRun(id: string, data: Record<string, unknown>): NeuroRun {
+  const stages = Array.isArray(data.stages) ? (data.stages as NeuroRun["stages"]).filter((stage) => !isOrchestratorStage(stage)) : [];
+
   return {
     id,
     caseId: String(data.caseId ?? ""),
@@ -15,7 +22,7 @@ function normalizeRun(id: string, data: Record<string, unknown>): NeuroRun {
     inputFiles: Array.isArray(data.inputFiles) ? (data.inputFiles as InputFile[]) : [],
     status: (data.status ?? "draft") as RunStatus,
     currentStage: String(data.currentStage ?? "Draft"),
-    stages: Array.isArray(data.stages) ? (data.stages as NeuroRun["stages"]) : [],
+    stages,
     createdAt: typeof data.createdAt === "string" ? data.createdAt : nowIso(),
     updatedAt: typeof data.updatedAt === "string" ? data.updatedAt : nowIso(),
     clinicalContext: data.clinicalContext as ClinicalContext | undefined,
@@ -32,6 +39,10 @@ export interface CreateRunInput {
 }
 
 export async function createNeuroRun(input: CreateRunInput): Promise<NeuroRun> {
+  if (isDemoMode()) {
+    throw new Error("Demo mode is read-only. Configure Firebase to create live runs.");
+  }
+
   const stages = buildStagesForModality(input.modality);
   const run: Omit<NeuroRun, "id"> = {
     caseId: input.caseId,
@@ -62,6 +73,10 @@ export async function createNeuroRun(input: CreateRunInput): Promise<NeuroRun> {
 }
 
 export async function getNeuroRun(runId: string): Promise<NeuroRun | null> {
+  if (isDemoMode()) {
+    return mockRuns.find((run) => run.id === runId) ?? null;
+  }
+
   if (!isFirebaseConfigured()) {
     return null;
   }
@@ -82,6 +97,12 @@ export async function getNeuroRun(runId: string): Promise<NeuroRun | null> {
 }
 
 export async function listRunsForCase(caseId: string): Promise<NeuroRun[]> {
+  if (isDemoMode()) {
+    return mockRuns
+      .filter((run) => run.caseId === caseId)
+      .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
+  }
+
   if (!isFirebaseConfigured()) {
     return [];
   }
@@ -104,6 +125,10 @@ export async function listRunsForCase(caseId: string): Promise<NeuroRun[]> {
 }
 
 export async function listRecentRuns(): Promise<NeuroRun[]> {
+  if (isDemoMode()) {
+    return [...mockRuns].sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
+  }
+
   if (!isFirebaseConfigured()) {
     return [];
   }
@@ -177,6 +202,28 @@ export async function deleteNeuroRun(runId: string): Promise<void> {
   );
 
   await deleteDoc(doc(db, "neuroRuns", runId));
+}
+
+export async function appendClinicalNoteToRun(runId: string, note: ClinicalNote): Promise<void> {
+  if (!isFirebaseConfigured() || isDemoMode()) {
+    return;
+  }
+
+  const run = await getNeuroRun(runId);
+  const context: ClinicalContext = run?.clinicalContext ?? {
+    establishedDiagnoses: [],
+    medications: [],
+    therapies: [],
+    symptomScales: [],
+  };
+
+  const { doc, serverTimestamp, updateDoc } = await import("firebase/firestore/lite");
+  const { db } = await getFirebaseServices();
+  await updateDoc(doc(db, "neuroRuns", runId), {
+    clinicalContext: { ...context, notes: [...(context.notes ?? []), note] },
+    updatedAt: nowIso(),
+    serverUpdatedAt: serverTimestamp(),
+  });
 }
 
 export async function clearRunOrchestration(runId: string): Promise<void> {

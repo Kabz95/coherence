@@ -3,19 +3,27 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
-import { Chrome, Mail, ShieldCheck } from "lucide-react";
-import { signInWithEmail, signInWithGoogle, signUpWithEmail } from "@/lib/auth";
-import { isFirebaseConfigured } from "@/lib/firebase";
+import { Chrome, FlaskConical, Loader2, Mail, ShieldCheck } from "lucide-react";
+
+import {
+  signInWithEmail,
+  signInWithGoogle,
+  signUpWithEmail,
+} from "@/lib/auth";
 import { GENERAL_DISCLAIMER } from "@/lib/clinical-copy";
-import { ProgressBar } from "./progress-bar";
+import { isFirebaseConfigured } from "@/lib/firebase";
+import { useAuth } from "./auth-provider";
 
 export function AuthForm({ mode }: { mode: "sign-in" | "sign-up" }) {
   const router = useRouter();
   const configured = isFirebaseConfigured();
+  const { signInAsDemo } = useAuth();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+
   const isSignUp = mode === "sign-up";
 
   async function finish(action: () => Promise<unknown>) {
@@ -25,8 +33,11 @@ export function AuthForm({ mode }: { mode: "sign-in" | "sign-up" }) {
     try {
       await action();
       router.push("/dashboard");
+      router.refresh();
     } catch (nextError) {
-      setError(nextError instanceof Error ? nextError.message : "Authentication failed.");
+      setError(
+        nextError instanceof Error ? nextError.message : "Authentication failed."
+      );
     } finally {
       setBusy(false);
     }
@@ -34,77 +45,107 @@ export function AuthForm({ mode }: { mode: "sign-in" | "sign-up" }) {
 
   function handleEmailSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    finish(() => (isSignUp ? signUpWithEmail(email, password) : signInWithEmail(email, password)));
+
+    finish(() =>
+      isSignUp
+        ? signUpWithEmail(email, password)
+        : signInWithEmail(email, password)
+    );
   }
 
   return (
-    <main className="min-h-screen bg-midnight px-4 py-8 text-white">
-      <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_20%_10%,rgba(103,232,249,0.14),transparent_28%),radial-gradient(circle_at_80%_5%,rgba(245,199,107,0.1),transparent_24%)]" />
-      <div className="relative mx-auto grid min-h-[calc(100vh-4rem)] max-w-6xl items-center gap-8 lg:grid-cols-[0.9fr_1.1fr]">
+    <main className="min-h-screen bg-slate-950 px-5 py-10 text-slate-100">
+      <div className="mx-auto grid min-h-[calc(100vh-5rem)] max-w-6xl items-center gap-8 lg:grid-cols-2">
         <section>
-          <Link href="/" className="text-lg font-semibold tracking-[0.2em]">COHERENCE</Link>
-          <h1 className="mt-8 text-4xl font-semibold leading-tight md:text-5xl">
-            {isSignUp ? "Create a clinician workspace account" : "Sign in to Coherence"}
+          <div className="inline-flex items-center gap-2 rounded-full border border-cyan-300/20 bg-cyan-300/10 px-3 py-1 text-sm text-cyan-100">
+            <ShieldCheck className="h-4 w-4" />
+            COHERENCE
+          </div>
+
+          <h1 className="mt-6 text-4xl font-semibold tracking-tight text-white md:text-5xl">
+            {isSignUp
+              ? "Create a clinician workspace account"
+              : "Sign in to Coherence"}
           </h1>
-          <p className="mt-5 max-w-xl text-sm leading-7 text-slate-300">
-            Authentication protects access to case organization, upload registration, run timelines, and structured non-diagnostic reporting.
+
+          <p className="mt-4 max-w-xl text-sm leading-6 text-slate-300">
+            Authentication protects access to case organization, upload
+            registration, run timelines, and structured non-diagnostic reporting.
           </p>
-          <div className="mt-6 rounded-lg border border-gold/35 bg-gold/10 p-4 text-sm leading-6 text-amber-50">
-            <div className="flex gap-3">
-              <ShieldCheck className="mt-0.5 h-5 w-5 flex-none text-gold" />
-              <p>{GENERAL_DISCLAIMER}</p>
-            </div>
+
+          <div className="mt-6 rounded-2xl border border-amber-300/20 bg-amber-300/10 p-4 text-sm text-amber-100">
+            {GENERAL_DISCLAIMER}
           </div>
         </section>
 
-        <section className="rounded-lg border border-line bg-panel/80 p-6 shadow-glow">
+        <section className="rounded-3xl border border-white/10 bg-white/[0.04] p-6 shadow-2xl shadow-black/30">
           {!configured ? (
-            <div className="mb-5 rounded-md border border-gold/35 bg-gold/10 p-3 text-sm text-gold">
-              Firebase config is missing. Add `.env.local` values and restart the dev server before signing in.
+            <div className="mb-4 space-y-3 rounded-2xl border border-cyan-300/25 bg-cyan-300/10 p-4 text-sm text-cyan-50">
+              <p>
+                Firebase config is missing, so this build runs in <strong>demo mode</strong> with
+                seeded symposium cases. Continue with the demo clinician account to walk the full demo path.
+              </p>
+              <button
+                type="button"
+                onClick={() => {
+                  signInAsDemo();
+                  router.push("/dashboard");
+                  router.refresh();
+                }}
+                className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-cyan-300 px-4 py-2.5 text-sm font-semibold text-slate-950 hover:bg-cyan-200"
+              >
+                <FlaskConical className="h-4 w-4" />
+                Continue with demo account
+              </button>
             </div>
           ) : null}
 
           <form onSubmit={handleEmailSubmit} className="space-y-4">
-            <div>
-              <label htmlFor="email" className="text-sm font-medium text-white">Email</label>
+            <label className="block">
+              <span className="text-sm text-slate-300">Email</span>
               <input
-                id="email"
-                type="email"
                 value={email}
                 onChange={(event) => setEmail(event.target.value)}
-                className="mt-2 w-full rounded-md border border-white/10 bg-midnight px-3 py-2 text-sm text-white outline-none focus:border-cyan-300"
+                className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-cyan-300"
                 autoComplete="email"
+                type="email"
                 required
+                disabled={busy || !configured}
               />
-            </div>
-            <div>
-              <label htmlFor="password" className="text-sm font-medium text-white">Password</label>
+            </label>
+
+            <label className="block">
+              <span className="text-sm text-slate-300">Password</span>
               <input
-                id="password"
-                type="password"
                 value={password}
                 onChange={(event) => setPassword(event.target.value)}
-                className="mt-2 w-full rounded-md border border-white/10 bg-midnight px-3 py-2 text-sm text-white outline-none focus:border-cyan-300"
+                className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-cyan-300"
                 autoComplete={isSignUp ? "new-password" : "current-password"}
+                type="password"
                 minLength={6}
                 required
+                disabled={busy || !configured}
               />
-            </div>
+            </label>
 
-            {error ? <div className="rounded-md border border-rose-300/30 bg-rose-300/10 p-3 text-sm text-rose-100">{error}</div> : null}
+            {error ? (
+              <div className="rounded-xl border border-red-300/20 bg-red-300/10 p-3 text-sm text-red-100">
+                {error}
+              </div>
+            ) : null}
 
             <button
               type="submit"
-              disabled={!configured || busy}
-              className="inline-flex w-full items-center justify-center gap-2 rounded-md bg-cyan-300 px-4 py-2.5 text-sm font-semibold text-slate-950 disabled:cursor-not-allowed disabled:opacity-50"
+              disabled={busy || !configured}
+              className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-cyan-300 px-4 py-2.5 text-sm font-semibold text-slate-950 hover:bg-cyan-200 disabled:cursor-not-allowed disabled:opacity-50"
             >
               <Mail className="h-4 w-4" />
-              {busy ? "Working..." : isSignUp ? "Create account" : "Sign in with email"}
+              {busy ? "Working..." : isSignUp ? "Create account" : "Sign in"}
+              {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
             </button>
-            {busy ? <ProgressBar label={isSignUp ? "Creating account" : "Signing in"} detail="Contacting Firebase Auth" /> : null}
           </form>
 
-          <div className="my-5 flex items-center gap-3 text-xs uppercase tracking-wide text-slate-500">
+          <div className="my-5 flex items-center gap-3 text-xs text-slate-500">
             <div className="h-px flex-1 bg-white/10" />
             or
             <div className="h-px flex-1 bg-white/10" />
@@ -112,17 +153,20 @@ export function AuthForm({ mode }: { mode: "sign-in" | "sign-up" }) {
 
           <button
             type="button"
-            disabled={!configured || busy}
             onClick={() => finish(signInWithGoogle)}
-            className="inline-flex w-full items-center justify-center gap-2 rounded-md border border-white/10 bg-white/[0.04] px-4 py-2.5 text-sm font-medium text-white hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50"
+            disabled={busy || !configured}
+            className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/[0.04] px-4 py-2.5 text-sm font-medium text-white hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50"
           >
             <Chrome className="h-4 w-4" />
             Continue with Google
           </button>
 
-          <p className="mt-5 text-center text-sm text-slate-300">
+          <p className="mt-5 text-center text-sm text-slate-400">
             {isSignUp ? "Already have an account?" : "Need an account?"}{" "}
-            <Link href={isSignUp ? "/sign-in" : "/sign-up"} className="text-cyan-200">
+            <Link
+              href={isSignUp ? "/sign-in" : "/sign-up"}
+              className="font-medium text-cyan-200 hover:text-cyan-100"
+            >
               {isSignUp ? "Sign in" : "Create one"}
             </Link>
           </p>

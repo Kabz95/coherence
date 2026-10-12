@@ -1,12 +1,12 @@
 import Link from "next/link";
+import { FolderOpen } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 import { CaseCard } from "@/components/case-card";
 import { DisclaimerBanner } from "@/components/disclaimer-banner";
 import { StatusChip } from "@/components/status-chip";
+import { EmptyState } from "@/components/ui/state";
 import { listPatientCases } from "@/lib/cases";
 import { listRecentRuns } from "@/lib/runs";
-
-export const dynamic = "force-dynamic";
 
 export default async function DashboardPage() {
   const [cases, runs] = await Promise.all([listPatientCases(), listRecentRuns()]);
@@ -40,6 +40,21 @@ export default async function DashboardPage() {
               {cases.slice(0, 3).map((patientCase) => (
                 <CaseCard key={patientCase.id} patientCase={patientCase} latestRun={runs.find((run) => run.caseId === patientCase.id)} />
               ))}
+              {cases.length === 0 ? (
+                <EmptyState
+                  title="No cases yet"
+                  body="Create your first patient case to organize clinical context and imaging runs."
+                  icon={<FolderOpen className="h-8 w-8" />}
+                  action={
+                    <Link
+                      href="/cases"
+                      className="inline-flex items-center gap-2 rounded-xl bg-cyan-300 px-4 py-2 text-sm font-semibold text-slate-950 hover:bg-cyan-200"
+                    >
+                      Go to cases
+                    </Link>
+                  }
+                />
+              ) : null}
             </div>
           </section>
           <section className="rounded-lg border border-line bg-panel/75 p-5">
@@ -57,6 +72,9 @@ export default async function DashboardPage() {
                   <StatusChip status={run.status} />
                 </Link>
               ))}
+              {runs.length === 0 ? (
+                <p className="py-6 text-center text-sm text-slate-500">No runs yet. Upload data to create the first run.</p>
+              ) : null}
             </div>
           </section>
         </div>

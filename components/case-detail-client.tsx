@@ -1,147 +1,229 @@
 "use client";
 
 import Link from "next/link";
-import { useParams, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
-import { LongitudinalPanel } from "@/components/longitudinal-panel";
-import { StatusChip } from "@/components/status-chip";
-import { ProgressBar } from "@/components/progress-bar";
-import { clinicianEnteredDiagnosisCopy } from "@/lib/clinical-copy";
-import { deletePatientCase, getPatientCase } from "@/lib/cases";
-import { listRunsForCase } from "@/lib/runs";
-import type { ClinicalContext, NeuroRun, PatientCase } from "@/lib/types";
+import { useSearchParams } from "next/navigation";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { CalendarDays, FileText, FlaskConical, Plus, Stethoscope } from "lucide-react";
+import { getPatientCase } from "@/lib/cases";
+import { getMockClinicalContext } from "@/lib/mock-data";
+import { appendClinicalNoteToRun, listRunsForCase } from "@/lib/runs";
+import { buildCaseTimeline } from "@/lib/timeline";
+import type { ClinicalContext, ClinicalNote, NeuroRun, PatientCase } from "@/lib/types";
+import { ClinicalContextPanel } from "./cases/clinical-context-panel";
+import { ClinicalNotesPanel } from "./cases/clinical-notes-panel";
+import { LongitudinalComparison } from "./cases/longitudinal-comparison";
+import { CaseTimeline } from "./timeline/case-timeline";
+import { MedicationTimeline } from "./timeline/medication-timeline";
+import { SymptomScaleTimeline } from "./timeline/symptom-scale-timeline";
+import { StatusChip } from "./status-chip";
+import { EmptyState, ErrorState } from "./ui/state";
+import { ProgressBar } from "./progress-bar";
 
-export function CaseDetailClient({ caseIdOverride }: { caseIdOverride?: string }) {
-  const router = useRouter();
-  const params = useParams<{ caseId: string }>();
-  const caseId = caseIdOverride ?? params.caseId;
+const TABS = [
+  { id: "overview", label: "Overview", icon: FileText },
+  { id: "timeline", label: "Timeline", icon: CalendarDays },
+  { id: "clinical", label: "Clinical context", icon: Stethoscope },
+  { id: "longitudinal", label: "Longitudinal", icon: FlaskConical },
+] as const;
+
+type TabId = (typeof TABS)[number]["id"];
+
+function resolveContext(caseId: string, runs: NeuroRun[]): ClinicalContext | undefined {
+  const fromRuns = [...runs]
+    .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))
+    .map((run) => run.clinicalContext)
+    .find(Boolean);
+  return fromRuns ?? getMockClinicalContext(caseId);
+}
+
+export function CaseDetailClient({ caseId }: { caseId: string }) {
+  const searchParams = useSearchParams();
+  const initialTab = (searchParams.get("tab") as TabId) || "overview";
+  const focusRunId = searchParams.get("focusRun") ?? undefined;
+
+  const [tab, setTab] = useState<TabId>(TABS.some((t) => t.id === initialTab) ? initialTab : "overview");
   const [patientCase, setPatientCase] = useState<PatientCase | null>(null);
   const [runs, setRuns] = useState<NeuroRun[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [deleting, setDeleting] = useState(false);
+  const [noteRefresh, setNoteRefresh] = useState(0);
 
-  useEffect(() => {
-    let mounted = true;
-
-    async function load() {
-      try {
-        const [nextCase, nextRuns] = await Promise.all([getPatientCase(caseId), listRunsForCase(caseId)]);
-        if (!mounted) return;
-        setPatientCase(nextCase);
-        setRuns(nextRuns);
-      } catch (nextError) {
-        if (mounted) {
-          setError(nextError instanceof Error ? nextError.message : "Unable to load case.");
-        }
-      } finally {
-        if (mounted) setLoading(false);
-      }
+  const load = useCallback(async () => {
+    setLoading(true);
+    setError("");
+    try {
+      const [nextCase, nextRuns] = await Promise.all([getPatientCase(caseId), listRunsForCase(caseId)]);
+      setPatientCase(nextCase);
+      setRuns(nextRuns);
+    } catch (nextError) {
+      setError(nextError instanceof Error ? nextError.message : "Unable to load case.");
+    } finally {
+      setLoading(false);
     }
-
-    load();
-    return () => {
-      mounted = false;
-    };
   }, [caseId]);
 
-  if (loading) return <ProgressBar label="Loading case" detail="Fetching case and runs" />;
+  useEffect(() => {
+    load();
+  }, [load, noteRefresh]);
 
-  if (error || !patientCase) {
-    return <div className="rounded-lg border border-rose-300/30 bg-rose-300/10 p-5 text-sm text-rose-100">{error || "Case not found."}</div>;
+  const context = useMemo(() => (patientCase ? resolveContext(patientCase.id, runs) : undefined), [patientCase, runs]);
+  const events = useMemo(
+    () => (patientCase ? buildCaseTimeline(patientCase, runs, context) : []),
+    [patientCase, runs, context],
+  );
+  const contextRunId = useMemo(
+    () =>
+      [...runs]
+        .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))
+        .find((run) => run.clinicalContext)?.id,
+    [runs],
+  );
+
+  async function handleAddNote(body: string) {
+    if (!contextRunId) throw new Error("No run with clinical context is available to attach the note to.");
+    const note: ClinicalNote = {
+      id: `note-${Date.now()}`,
+      date: new Date().toISOString(),
+      author: "Clinician",
+      body,
+    };
+    await appendClinicalNoteToRun(contextRunId, note);
+    setNoteRefresh((value) => value + 1);
   }
 
-  const context = runs[0]?.clinicalContext;
-
-  async function handleDeleteCase() {
-    if (!patientCase) return;
-    const confirmed = window.confirm(`Delete ${patientCase.displayName}? This also deletes its run documents and uploaded run input files where accessible.`);
-    if (!confirmed) return;
-
-    setDeleting(true);
-    setError("");
-
-    try {
-      await deletePatientCase(caseId);
-      router.push("/cases");
-      router.refresh();
-    } catch (nextError) {
-      setError(nextError instanceof Error ? nextError.message : "Unable to delete case.");
-      setDeleting(false);
-    }
+  if (loading) return <ProgressBar label="Loading case" detail="Fetching case record and runs" />;
+  if (error) return <ErrorState body={error} onRetry={load} />;
+  if (!patientCase) {
+    return (
+      <EmptyState
+        title="Case not found"
+        body="This case could not be loaded. It may have been deleted."
+        action={
+          <Link href="/cases" className="rounded-xl border border-white/10 px-4 py-2 text-sm text-slate-200 hover:bg-white/10">
+            Back to cases
+          </Link>
+        }
+      />
+    );
   }
 
   return (
     <div className="space-y-6">
-      <section className="rounded-lg border border-line bg-panel/75 p-5">
-        <div className="flex flex-wrap items-start justify-between gap-4">
+      <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-6 shadow-2xl shadow-black/20">
+        <div className="flex flex-col justify-between gap-4 md:flex-row md:items-start">
           <div>
-            <h1 className="text-2xl font-semibold text-white">{patientCase.displayName}</h1>
-            <p className="mt-2 text-sm text-slate-300">Birth year: {patientCase.birthYear ?? "omitted"} - Sex: {patientCase.sex ?? "not specified"}</p>
-            <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-300">{patientCase.notes ?? "No case notes entered."}</p>
+            <p className="text-sm text-cyan-200">Patient case</p>
+            <h2 className="mt-1 text-2xl font-semibold text-white">{patientCase.displayName}</h2>
+            <p className="mt-2 max-w-3xl text-sm text-slate-300">
+              {patientCase.notes ?? "Clinician-entered context, neuro-data runs, longitudinal monitoring, and report access."}
+            </p>
+            <p className="mt-2 text-xs text-slate-500">
+              Diagnoses shown here are clinical context entered by a clinician, not generated by Coherence.
+            </p>
           </div>
-          <div className="flex flex-wrap gap-2">
-            <Link href="/upload" className="rounded-md bg-cyan-300 px-4 py-2 text-sm font-medium text-slate-950">Start new run</Link>
-            <button
-              type="button"
-              onClick={handleDeleteCase}
-              disabled={deleting}
-              className="rounded-md border border-rose-300/35 bg-rose-300/10 px-4 py-2 text-sm font-medium text-rose-100 hover:bg-rose-300/20 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              {deleting ? "Deleting..." : "Delete case"}
-            </button>
-          </div>
+          <Link
+            href={`/upload?caseId=${patientCase.id}`}
+            className="inline-flex shrink-0 items-center gap-2 rounded-xl bg-cyan-300 px-4 py-2 text-sm font-semibold text-slate-950 hover:bg-cyan-200"
+          >
+            <Plus className="h-4 w-4" />
+            Start new run
+          </Link>
         </div>
-        {deleting ? <div className="mt-4"><ProgressBar label="Deleting case" detail="Removing case, runs, and accessible input files" /></div> : null}
-      </section>
-      <section className="rounded-lg border border-line bg-panel/75 p-5">
-        <h2 className="text-lg font-semibold text-white">Clinical context</h2>
-        <p className="mt-2 text-sm leading-6 text-slate-300">{clinicianEnteredDiagnosisCopy}</p>
-        <div className="mt-4 grid gap-4 md:grid-cols-4">
-          <ContextList title="Established diagnoses" items={context?.establishedDiagnoses ?? []} />
-          <ContextList title="Medications" items={formatMedications(context)} />
-          <ContextList title="Therapies" items={(context?.therapies ?? []).map((item) => item.type)} />
-          <ContextList title="Symptom scales" items={(context?.symptomScales ?? []).map((item) => `${item.name}${item.score ? `: ${item.score}` : ""}`)} />
+
+        <div className="mt-5 flex flex-wrap gap-2" role="tablist" aria-label="Case sections">
+          {TABS.map((item) => {
+            const Icon = item.icon;
+            return (
+              <button
+                key={item.id}
+                type="button"
+                role="tab"
+                aria-selected={tab === item.id}
+                onClick={() => setTab(item.id)}
+                className={`inline-flex items-center gap-2 rounded-xl border px-4 py-2 text-sm ${
+                  tab === item.id
+                    ? "border-cyan-300 bg-cyan-300/15 text-cyan-50"
+                    : "border-white/10 bg-white/[0.03] text-slate-300 hover:border-cyan-300/40"
+                }`}
+              >
+                <Icon className="h-4 w-4" />
+                {item.label}
+              </button>
+            );
+          })}
         </div>
-      </section>
-      <LongitudinalPanel />
-      <section className="rounded-lg border border-line bg-panel/75 p-5">
-        <h2 className="text-lg font-semibold text-white">Runs</h2>
-        <div className="mt-4 overflow-x-auto">
-          <table className="min-w-full text-left text-sm">
-            <thead className="text-xs uppercase tracking-wide text-slate-400">
-              <tr><th className="py-2 pr-4">Run</th><th className="py-2 pr-4">Modality</th><th className="py-2 pr-4">Stage</th><th className="py-2 pr-4">Status</th></tr>
-            </thead>
-            <tbody className="divide-y divide-white/10">
-              {runs.length ? runs.map((run) => (
-                <tr key={run.id}>
-                  <td className="py-3 pr-4"><Link href={`/cases/${caseId}/runs/${run.id}`} className="text-cyan-200">{run.id}</Link></td>
-                  <td className="py-3 pr-4 capitalize text-slate-300">{run.modality.replace("_", " ")}</td>
-                  <td className="py-3 pr-4 text-slate-300">{run.currentStage}</td>
-                  <td className="py-3 pr-4"><StatusChip status={run.status} /></td>
-                </tr>
-              )) : (
-                <tr><td colSpan={4} className="py-6 text-center text-slate-400">No runs for this case yet.</td></tr>
-              )}
-            </tbody>
-          </table>
+      </div>
+
+      {tab === "overview" ? (
+        <div className="space-y-6">
+          <ClinicalContextPanel context={context} />
+          <section className="rounded-2xl border border-white/10 bg-white/[0.03] p-6">
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-semibold text-white">Runs ({runs.length})</h3>
+              <Link href={`/upload?caseId=${patientCase.id}`} className="text-sm text-cyan-200 hover:text-cyan-100">
+                + New run
+              </Link>
+            </div>
+            {runs.length === 0 ? (
+              <div className="mt-4">
+                <EmptyState
+                  title="No runs yet"
+                  body="Create the first structural MRI run for this case to begin pipeline processing and longitudinal tracking."
+                  action={
+                    <Link
+                      href={`/upload?caseId=${patientCase.id}`}
+                      className="inline-flex items-center gap-2 rounded-xl bg-cyan-300 px-4 py-2 text-sm font-semibold text-slate-950 hover:bg-cyan-200"
+                    >
+                      <Plus className="h-4 w-4" />
+                      Start new run
+                    </Link>
+                  }
+                />
+              </div>
+            ) : (
+              <ul className="mt-4 space-y-3">
+                {runs.map((run) => (
+                  <li key={run.id}>
+                    <Link
+                      href={`/cases/${patientCase.id}/runs/${run.id}`}
+                      className="flex items-center justify-between gap-4 rounded-xl border border-white/10 bg-black/25 p-4 hover:border-cyan-300/40"
+                    >
+                      <div>
+                        <div className="font-medium text-white">{run.id}</div>
+                        <div className="mt-1 text-sm capitalize text-slate-400">
+                          {run.modality.replace(/_/g, " ")} · {run.createdAt.slice(0, 10)} · {run.inputFiles.length} file(s)
+                        </div>
+                      </div>
+                      <StatusChip status={run.status} />
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
         </div>
-      </section>
+      ) : null}
+
+      {tab === "timeline" ? (
+        <div className="space-y-6">
+          <CaseTimeline events={events} caseId={patientCase.id} />
+          <MedicationTimeline medications={context?.medications ?? []} />
+          <SymptomScaleTimeline context={context} />
+        </div>
+      ) : null}
+
+      {tab === "clinical" ? (
+        <div className="space-y-6">
+          <ClinicalContextPanel context={context} />
+          <ClinicalNotesPanel notes={context?.notes ?? []} onAddNote={contextRunId ? handleAddNote : undefined} />
+        </div>
+      ) : null}
+
+      {tab === "longitudinal" ? (
+        <LongitudinalComparison runs={runs} caseId={patientCase.id} focusRunId={focusRunId} />
+      ) : null}
     </div>
   );
 }
 
-function formatMedications(context?: ClinicalContext): string[] {
-  return (context?.medications ?? []).map((item) => `${item.name}${item.dose ? `, ${item.dose}` : ""}`);
-}
-
-function ContextList({ title, items }: { title: string; items: string[] }) {
-  return (
-    <div className="rounded-md border border-white/10 bg-white/[0.03] p-4">
-      <h3 className="text-sm font-medium text-white">{title}</h3>
-      <ul className="mt-3 space-y-2 text-sm text-slate-300">
-        {items.length ? items.map((item) => <li key={item}>{item}</li>) : <li className="text-slate-500">No entries</li>}
-      </ul>
-    </div>
-  );
-}
+export default CaseDetailClient;

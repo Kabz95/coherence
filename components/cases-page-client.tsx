@@ -7,6 +7,7 @@ import { deletePatientCase, listPatientCases } from "@/lib/cases";
 import { listRecentRuns } from "@/lib/runs";
 import type { NeuroRun, PatientCase } from "@/lib/types";
 import { ProgressBar } from "./progress-bar";
+import { EmptyState } from "./ui/state";
 
 export function CasesPageClient() {
   const [cases, setCases] = useState<PatientCase[]>([]);
@@ -62,8 +63,14 @@ export function CasesPageClient() {
       </section>
       <section>
         <h1 className="mb-4 text-2xl font-semibold text-white">Patient cases</h1>
-        {loading ? <ProgressBar label="Loading cases" detail="Fetching Firestore records" /> : null}
+        {loading ? <ProgressBar label="Loading cases" detail="Fetching records" /> : null}
         {error ? <div className="rounded-lg border border-rose-300/30 bg-rose-300/10 p-5 text-sm text-rose-100">{error}</div> : null}
+        {!loading && !error && cases.length === 0 ? (
+          <EmptyState
+            title="No cases yet"
+            body="Create your first patient case to organize clinician-entered context and imaging runs. In demo mode, seeded symposium cases appear here automatically."
+          />
+        ) : null}
         <div className="grid gap-4">
           {cases.map((patientCase) => (
             <div key={patientCase.id} className="relative">

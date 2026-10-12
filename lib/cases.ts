@@ -1,3 +1,4 @@
+import { isDemoMode } from "./demo";
 import { getFirebaseServices, isFirebaseConfigured } from "./firebase";
 import { mockCases } from "./mock-data";
 import type { PatientCase } from "./types";
@@ -19,6 +20,10 @@ function normalizeCase(id: string, data: Record<string, unknown>): PatientCase {
 }
 
 export async function createPatientCase(input: Omit<PatientCase, "id" | "createdAt" | "updatedAt">): Promise<PatientCase> {
+  if (isDemoMode()) {
+    throw new Error("Demo mode is read-only. Configure Firebase to create live cases.");
+  }
+
   const now = timestampFallback();
 
   if (!isFirebaseConfigured()) {
@@ -39,6 +44,11 @@ export async function createPatientCase(input: Omit<PatientCase, "id" | "created
 }
 
 export async function listPatientCases(): Promise<PatientCase[]> {
+  // Symposium demo path: serve the seeded cases when no backend is configured.
+  if (isDemoMode()) {
+    return [...mockCases].sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
+  }
+
   if (!isFirebaseConfigured()) {
     return [];
   }
@@ -59,6 +69,10 @@ export async function listPatientCases(): Promise<PatientCase[]> {
 }
 
 export async function getPatientCase(caseId: string): Promise<PatientCase | null> {
+  if (isDemoMode()) {
+    return mockCases.find((patientCase) => patientCase.id === caseId) ?? null;
+  }
+
   if (!isFirebaseConfigured()) {
     return null;
   }

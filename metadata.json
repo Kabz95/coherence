@@ -1,0 +1,8 @@
+{
+  "name": "Coherence",
+  "description": "Clinician neuroimaging decision-support workspace for organizing multimodal neuro data, longitudinal progress monitoring, and structured non-diagnostic reports.",
+  "permissions": [],
+  "capabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

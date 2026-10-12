@@ -1,8 +1,6 @@
 import { AppShell } from "@/components/app-shell";
 import { UploadPageClient } from "@/components/upload-page-client";
 
-export const dynamic = "force-dynamic";
-
 export default function UploadPage() {
   return (
     <AppShell>

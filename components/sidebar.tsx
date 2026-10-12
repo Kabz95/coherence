@@ -2,14 +2,13 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BarChart3, FileText, FolderOpen, Settings, UploadCloud } from "lucide-react";
+import { BarChart3, FileText, FolderOpen, UploadCloud } from "lucide-react";
 
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: BarChart3 },
   { href: "/cases", label: "Cases", icon: FolderOpen },
   { href: "/upload", label: "Upload", icon: UploadCloud },
-  { href: "/reports/run-structural-demo", label: "Reports", icon: FileText },
-  { href: "#settings", label: "Settings", icon: Settings }
+  { href: "/reports/run-structural-latest", label: "Reports", icon: FileText },
 ];
 
 export function Sidebar() {
