@@ -40,7 +40,7 @@ def run(context) -> object:
 
     upstream = upstream_manifest_outputs(context, "converter")
     if upstream and upstream.get("convertedFiles"):
-        files = [{"name": e["name"], "storagePath": e.get("gcsPath", "")} for e in upstream["convertedFiles"]]
+        files = [{"name": e["name"], "storagePath": e.get("gcsPath", ""), "sourceName": e.get("sourceName")} for e in upstream["convertedFiles"]]
     else:
         files = input_files_from_run(context.run_doc)
     raw_files = input_files_from_run(context.run_doc)

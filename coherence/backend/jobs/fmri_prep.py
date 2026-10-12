@@ -51,7 +51,7 @@ def run(context) -> object:
     # Re-resolve the BOLD file from converter outputs or raw inputs.
     upstream = upstream_manifest_outputs(context, "converter")
     if upstream and upstream.get("convertedFiles"):
-        files = [{"name": e["name"], "storagePath": e.get("gcsPath", "")} for e in upstream["convertedFiles"]]
+        files = [{"name": e["name"], "storagePath": e.get("gcsPath", ""), "sourceName": e.get("sourceName")} for e in upstream["convertedFiles"]]
     else:
         from jobs.common import input_files_from_run
 

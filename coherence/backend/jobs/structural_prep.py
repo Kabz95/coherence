@@ -28,7 +28,7 @@ def _converted_inputs(context) -> list[dict]:
     upstream = upstream_manifest_outputs(context, "converter")
     if upstream and upstream.get("convertedFiles"):
         return [
-            {"name": e["name"], "storagePath": e.get("gcsPath", "")}
+            {"name": e["name"], "storagePath": e.get("gcsPath", ""), "sourceName": e.get("sourceName")}
             for e in upstream["convertedFiles"]
         ]
     return input_files_from_run(context.run_doc)

@@ -47,11 +47,21 @@ def resolve_input_file(context: Any, file_meta: dict[str, Any], dest_dir: Path) 
 
     local_inputs = os.getenv("COHERENCE_LOCAL_INPUTS")
     if local_inputs:
-        candidate = Path(local_inputs) / name
-        if candidate.exists():
-            dest_dir.mkdir(parents=True, exist_ok=True)
-            shutil.copyfile(candidate, dest)
-            return dest
+        candidates = [(Path(local_inputs) / name, dest)]
+        # The converter may rename files (e.g. bold.nii -> bold.nii.gz);
+        # fall back to the pre-conversion source name for local resolution,
+        # keeping the real filename so downstream readers see the right
+        # extension.
+        source_name = file_meta.get("sourceName")
+        if source_name and str(source_name) != name:
+            candidates.append(
+                (Path(local_inputs) / str(source_name), dest_dir / str(source_name))
+            )
+        for candidate, target in candidates:
+            if candidate.exists():
+                dest_dir.mkdir(parents=True, exist_ok=True)
+                shutil.copyfile(candidate, target)
+                return target
 
     storage_path = str(file_meta.get("storagePath") or "")
     if not storage_path:

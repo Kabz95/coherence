@@ -114,7 +114,7 @@ def run(context) -> object:
         from jobs.imaging import resolve_input_file
 
         for entry in upstream["convertedFiles"]:
-            fake_meta = {"name": entry["name"], "storagePath": entry.get("gcsPath", "")}
+            fake_meta = {"name": entry["name"], "storagePath": entry.get("gcsPath", ""), "sourceName": entry.get("sourceName")}
             try:
                 # converted files live under the converter prefix; resolve via GCS path
                 local = resolve_input_file(context, fake_meta, work / "converted")

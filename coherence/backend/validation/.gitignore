@@ -1,0 +1,5 @@
+# Staged inputs (symlinks into dataset caches) and per-run scratch.
+work/
+inputs/
+tmp/
+__pycache__/

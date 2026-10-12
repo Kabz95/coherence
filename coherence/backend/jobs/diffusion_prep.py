@@ -45,7 +45,7 @@ def run(context) -> object:
     # (the converter only normalizes NIfTI/DICOM, not gradient tables).
     upstream = upstream_manifest_outputs(context, "converter")
     if upstream and upstream.get("convertedFiles"):
-        dwi_files = [{"name": e["name"], "storagePath": e.get("gcsPath", "")} for e in upstream["convertedFiles"]]
+        dwi_files = [{"name": e["name"], "storagePath": e.get("gcsPath", ""), "sourceName": e.get("sourceName")} for e in upstream["convertedFiles"]]
     else:
         dwi_files = input_files_from_run(context.run_doc)
     raw_files = input_files_from_run(context.run_doc)

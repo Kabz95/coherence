@@ -26,7 +26,7 @@ from jobs.imaging import (
 def _candidate_files(context):
     upstream = upstream_manifest_outputs(context, "converter")
     if upstream and upstream.get("convertedFiles"):
-        return [{"name": e["name"], "storagePath": e.get("gcsPath", "")} for e in upstream["convertedFiles"]]
+        return [{"name": e["name"], "storagePath": e.get("gcsPath", ""), "sourceName": e.get("sourceName")} for e in upstream["convertedFiles"]]
     return input_files_from_run(context.run_doc)
 
 
