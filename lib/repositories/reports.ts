@@ -1,5 +1,6 @@
 import { getNeuroRun, listRunsForCase } from "../runs";
 import type { NeuroRun, PatientCase } from "../types";
+import { MODALITY_LABELS } from "../types";
 
 export interface CaseReport {
   run: NeuroRun;
@@ -27,5 +28,6 @@ export async function listReportsForCase(caseId: string): Promise<CaseReport[]> 
 export function reportTitle(run: NeuroRun, patientCase?: PatientCase | null): string {
   const caseLabel = patientCase?.displayName ?? run.caseId;
   const date = run.report?.generatedAt?.slice(0, 10) ?? run.createdAt.slice(0, 10);
-  return `Structural report — ${caseLabel} — ${date}`;
+  const modalityLabel = MODALITY_LABELS[run.modality] ?? "Structural MRI";
+  return `${modalityLabel} report — ${caseLabel} — ${date}`;
 }

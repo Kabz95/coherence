@@ -3,6 +3,7 @@
 import { Printer } from "lucide-react";
 import { GENERAL_DISCLAIMER } from "@/lib/clinical-copy";
 import { buildStructuralReportSections } from "@/lib/reports/structural-summary";
+import { buildModalityReportSections } from "@/lib/reports/modality-summary";
 import { reportTitle } from "@/lib/repositories/reports";
 import type { NeuroRun, PatientCase } from "@/lib/types";
 import { EvidenceLedger } from "../evidence-ledger";
@@ -19,7 +20,10 @@ const toneStyles: Record<string, string> = {
  * symposium walkthrough.
  */
 export function UnifiedReport({ run, patientCase }: { run: NeuroRun; patientCase?: PatientCase | null }) {
-  const sections = buildStructuralReportSections(run, patientCase);
+  const sections =
+    run.modality === "structural_mri"
+      ? buildStructuralReportSections(run, patientCase)
+      : buildModalityReportSections(run);
   const evidence = run.outputs?.evidenceLedger ?? [];
 
   return (
