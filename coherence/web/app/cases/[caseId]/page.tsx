@@ -1,5 +1,6 @@
 import { AppShell } from "@/components/app-shell";
 import { CaseDetailClient } from "@/components/case-detail-client";
+import { mockCases } from "@/lib/mock-data";
 
 type CasePageProps = {
   params: Promise<{
@@ -8,7 +9,9 @@ type CasePageProps = {
 };
 
 export async function generateStaticParams() {
-  return [{ caseId: "_" }];
+  // Pre-render every demo case so static hosts (GitHub Pages) serve real
+  // deep links. Live deployments resolve any caseId client-side.
+  return mockCases.map((c) => ({ caseId: c.id }));
 }
 
 export default async function CasePage({ params }: CasePageProps) {

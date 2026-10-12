@@ -2,9 +2,11 @@ import type { Modality } from "@/lib/types";
 
 const labels: Record<Modality, { title: string; description: string }> = {
   structural_mri: { title: "Structural MRI", description: "DICOM ZIP or NIfTI inputs for structural measurement workflows." },
-  diffusion_mri: { title: "Diffusion MRI / DTI", description: "Diffusion volumes with bval/bvec companion files and connectome placeholders." },
-  eeg: { title: "EEG", description: "EDF, BDF, CSV placeholder, or vendor export placeholders for future signal summaries." },
-  multimodal: { title: "Multimodal case", description: "Coordinate structural, diffusion, EEG, and longitudinal comparison stages." }
+  diffusion_mri: { title: "Diffusion MRI / DTI", description: "Diffusion volumes with bval/bvec companion files for tensor summaries." },
+  fmri: { title: "Functional MRI", description: "4D BOLD series with BIDS sidecar for resting-state summaries (ALFF, DVARS, tSNR)." },
+  eeg: { title: "EEG", description: "EDF, BDF, or CSV recordings for spectral band-power summaries." },
+  meg: { title: "MEG", description: "MEG recordings (FIF/DS) as imported data for spectral band-power summaries." },
+  multimodal: { title: "Multimodal case", description: "Coordinate structural, diffusion, fMRI, EEG, MEG, and longitudinal comparison stages." }
 };
 
 export function ModalityCard({

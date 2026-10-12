@@ -1,5 +1,6 @@
 import { AppShell } from "@/components/app-shell";
 import { ReportDetailClient } from "@/components/report-detail-client";
+import { mockRuns } from "@/lib/mock-data";
 
 type ReportPageProps = {
   params: Promise<{
@@ -8,7 +9,7 @@ type ReportPageProps = {
 };
 
 export async function generateStaticParams() {
-  return [{ runId: "_" }];
+  return mockRuns.map((r) => ({ runId: r.id }));
 }
 
 export default async function ReportPage({ params }: ReportPageProps) {

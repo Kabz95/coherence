@@ -14,20 +14,24 @@ import { useAuth } from "./auth-provider";
 import { ModalityCard } from "./modality-card";
 import { ProgressBar } from "./progress-bar";
 
-/** Structural-MRI-first MVP: only structural runs can be created in this build. */
-const ENABLED_MODALITIES: Modality[] = ["structural_mri"];
-const ROADMAP_MODALITIES: Modality[] = ["diffusion_mri", "eeg", "multimodal"];
+/** All five brain-data pipelines are available in this build. */
+const ENABLED_MODALITIES: Modality[] = ["structural_mri", "diffusion_mri", "fmri", "eeg", "meg"];
+const ROADMAP_MODALITIES: Modality[] = ["multimodal"];
 
 const acceptedExtensions: Record<Modality, string[]> = {
   structural_mri: [".zip", ".nii", ".nii.gz", ".dcm"],
-  diffusion_mri: [".zip", ".nii", ".bval", ".bvec"],
+  diffusion_mri: [".zip", ".nii", ".nii.gz", ".bval", ".bvec"],
+  fmri: [".zip", ".nii", ".nii.gz", ".json"],
   eeg: [".edf", ".bdf", ".csv"],
+  meg: [".fif", ".fif.gz", ".ds", ".csv"],
   multimodal: [".zip", ".nii", ".nii.gz", ".edf", ".bdf"],
 };
 const acceptedExamples: Record<Modality, string[]> = {
   structural_mri: ["DICOM ZIP", "NIfTI .nii", "NIfTI .nii.gz"],
   diffusion_mri: ["DICOM ZIP", "NIfTI", "bval files", "bvec files"],
-  eeg: ["EDF", "BDF", "CSV placeholder", "Vendor export placeholder"],
+  fmri: ["BOLD NIfTI", "BIDS sidecar JSON", "DICOM ZIP"],
+  eeg: ["EDF", "BDF", "CSV"],
+  meg: ["FIF", "CTF .ds", "CSV"],
   multimodal: ["Structural MRI inputs", "Diffusion inputs", "EEG inputs", "Timepoint metadata"],
 };
 
@@ -51,7 +55,7 @@ export function UploadPanel({ cases }: { cases: PatientCase[] }) {
   const { identityEmail } = useAuth();
   const configured = isFirebaseConfigured();
   const demoMode = isDemoMode();
-  const [modality] = useState<Modality>("structural_mri");
+  const [modality, setModality] = useState<Modality>("structural_mri");
   const [files, setFiles] = useState<File[]>([]);
   const [problems, setProblems] = useState<FileProblem[]>([]);
   const [message, setMessage] = useState<string>("");
@@ -187,10 +191,20 @@ export function UploadPanel({ cases }: { cases: PatientCase[] }) {
 
       <div>
         <div className="text-sm font-medium text-white">Modality</div>
-        <p className="mt-1 text-xs text-slate-500">Structural-MRI-first build: additional modalities are on the roadmap.</p>
-        <div className="mt-3 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+        <p className="mt-1 text-xs text-slate-500">Each modality runs its own open-source pipeline (FastSurfer, DIPY, fMRIPrep, MNE-Python). Multimodal orchestration is on the roadmap.</p>
+        <div className="mt-3 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
           {ENABLED_MODALITIES.map((item) => (
-            <ModalityCard key={item} modality={item} selected={item === modality} badge="Available" />
+            <ModalityCard
+              key={item}
+              modality={item}
+              selected={item === modality}
+              onSelect={(next) => {
+                setModality(next);
+                setFiles([]);
+                setProblems([]);
+              }}
+              badge="Available"
+            />
           ))}
           {ROADMAP_MODALITIES.map((item) => (
             <ModalityCard key={item} modality={item} disabled badge="Roadmap" />

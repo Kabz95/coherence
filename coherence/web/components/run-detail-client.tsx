@@ -6,11 +6,12 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { FileText, GitCompareArrows, TimerReset } from "lucide-react";
 import { calculatePipelineProgress, formatDuration } from "@/lib/pipeline-progress";
 import { buildStructuralReportSections } from "@/lib/reports/structural-summary";
+import { buildModalityReportSections } from "@/lib/reports/modality-summary";
 import { getNeuroRun } from "@/lib/runs";
 import type { NeuroRun } from "@/lib/types";
 import { ProgressBar } from "./progress-bar";
 import { RunTimeline } from "./run-timeline";
-import { StructuralViewer } from "./viewer/structural-viewer";
+import { PipelineViewer } from "./viewer/pipeline-viewer";
 import { EmptyState } from "./ui/state";
 
 type RunDetailClientProps = {
@@ -165,7 +166,7 @@ export function RunDetailClient({ caseId: caseIdOverride, runId: runIdOverride }
 
       {run ? <RunTimeline stages={visibleStages} /> : null}
 
-      {run ? <StructuralViewer run={run} /> : null}
+      {run ? <PipelineViewer run={run} /> : null}
 
       {run ? <RunReportSummary run={run} caseId={caseId} /> : null}
 
@@ -179,7 +180,10 @@ export function RunDetailClient({ caseId: caseIdOverride, runId: runIdOverride }
 }
 
 function RunReportSummary({ run, caseId }: { run: NeuroRun; caseId: string }) {
-  const sections = useMemo(() => buildStructuralReportSections(run), [run]);
+  const sections = useMemo(
+    () => (run.modality === "structural_mri" ? buildStructuralReportSections(run) : buildModalityReportSections(run)),
+    [run],
+  );
   const measurements = sections.find((section) => section.id === "measurements");
   const qc = sections.find((section) => section.id === "qc");
   const hasReport = Boolean(run.report);

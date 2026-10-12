@@ -1,4 +1,14 @@
-export type Modality = "structural_mri" | "diffusion_mri" | "eeg" | "multimodal";
+export type Modality = "structural_mri" | "diffusion_mri" | "fmri" | "eeg" | "meg" | "multimodal";
+
+/** Human-readable labels for every modality, used across upload, run, and report views. */
+export const MODALITY_LABELS: Record<Modality, string> = {
+  structural_mri: "Structural MRI",
+  diffusion_mri: "Diffusion MRI",
+  fmri: "Functional MRI",
+  eeg: "EEG",
+  meg: "MEG",
+  multimodal: "Multimodal",
+};
 
 export type RunStatus = "draft" | "uploaded" | "queued" | "running" | "completed" | "failed";
 
@@ -120,7 +130,9 @@ export interface RunStage {
 export interface RunOutputs {
   structural?: Record<string, unknown>;
   diffusion?: Record<string, unknown>;
+  fmri?: Record<string, unknown>;
   eeg?: Record<string, unknown>;
+  meg?: Record<string, unknown>;
   visualizationAssets?: Record<string, string>;
   qc?: Record<string, unknown>;
   evidenceLedger?: EvidenceItem[];
