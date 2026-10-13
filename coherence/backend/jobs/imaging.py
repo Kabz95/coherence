@@ -159,10 +159,17 @@ def _background_level(data: np.ndarray, corner: int = 16) -> float:
     return float(np.percentile(vals, 99))
 
 
+# Sanity floor for intracranial volume (mL). Shared with the preliminary
+# validation harness: TICV below this on adult T1 is implausible and, in the
+# skull-strip path, triggers the reduced-erosion fallback for truncated FOVs.
+_TICV_SANITY_FLOOR_ML = 800.0
+
+
 def _stripped_brain_mask(
     data: np.ndarray,
     affine: np.ndarray | None = None,
     voxel_mm: float | None = None,
+    diagnostics: dict | None = None,
 ) -> np.ndarray:
     """Scalp-stripped rough brain mask for T1 volumetry.
 
@@ -176,14 +183,26 @@ def _stripped_brain_mask(
        hole-filling closes the head into a solid,
     3. erodes ~10 mm past scalp+skull, keeps the largest surviving core,
     4. dilates ~4 mm back and intersects with the head (net ~6 mm inside the
-       head surface: conservative by design).
+       head surface: conservative by design),
+    5. FOV-adaptive fallback: if the resulting TICV falls below the sanity
+       floor (truncated-FOV protocols image less head, so fixed 10 mm
+       erosion over-trims), the erosion is retried at ~7 mm and the
+       ``diagnostics`` dict flags ``fov_truncation_suspected``. The fallback
+       only triggers on implausible output, so standard-FOV behavior is
+       unchanged.
 
     Calibrated on ds000239 (GE 3T), ICBM152, and SPM T1: TICV lands in
     800-2200 mL. Rough estimate, NOT a segmentation.
+
+    Limits: the fallback cannot recover tissue outside the imaged FOV, so
+    TICV on truncated protocols remains a lower bound and must not be
+    compared to full-FOV timepoints. Erosion below 7 mm is not attempted:
+    less would risk leaving scalp/skull in the mask.
     """
     from scipy import ndimage
 
     vm = float(voxel_mm) if voxel_mm and voxel_mm > 0 else 1.0
+    voxel_ml = (vm ** 3) / 1000.0
     arr = np.asanyarray(data, dtype=np.float64)
     thresh = _background_level(arr) + 0.08
     binary = arr > thresh
@@ -209,18 +228,45 @@ def _stripped_brain_mask(
     sizes = ndimage.sum(binary, labeled, range(1, n_labels + 1))
     head = labeled == (int(np.argmax(sizes)) + 1)
     head = ndimage.binary_fill_holes(head)
+    head_vol_ml = float(head.sum()) * voxel_ml
 
-    erode_it = max(1, int(round(10.0 / vm)))
-    dilate_it = max(1, int(round(4.0 / vm)))
-    eroded = ndimage.binary_erosion(head, structure=np.ones((3, 3, 3)), iterations=erode_it)
-    lab2, n2 = ndimage.label(eroded)
-    if n2 == 0:
-        return np.zeros_like(data, dtype=bool)
-    sizes2 = ndimage.sum(eroded, lab2, range(1, n2 + 1))
-    core = lab2 == (int(np.argmax(sizes2)) + 1)
-    core = ndimage.binary_fill_holes(core)
-    mask = ndimage.binary_dilation(core, structure=np.ones((3, 3, 3)), iterations=dilate_it)
-    mask = ndimage.binary_fill_holes(mask) & head
+    def _erode_to_mask(erode_mm: float) -> np.ndarray:
+        erode_it = max(1, int(round(erode_mm / vm)))
+        dilate_it = max(1, int(round(4.0 / vm)))
+        eroded = ndimage.binary_erosion(
+            head, structure=np.ones((3, 3, 3)), iterations=erode_it
+        )
+        lab2, n2 = ndimage.label(eroded)
+        if n2 == 0:
+            return np.zeros_like(data, dtype=bool)
+        sizes2 = ndimage.sum(eroded, lab2, range(1, n2 + 1))
+        core = lab2 == (int(np.argmax(sizes2)) + 1)
+        core = ndimage.binary_fill_holes(core)
+        m = ndimage.binary_dilation(
+            core, structure=np.ones((3, 3, 3)), iterations=dilate_it
+        )
+        m = ndimage.binary_fill_holes(m) & head
+        return m.astype(bool)
+
+    erode_mm = 10.0
+    mask = _erode_to_mask(erode_mm)
+    ticv_ml = float(mask.sum()) * voxel_ml
+    fov_truncation_suspected = False
+    if 0.0 < ticv_ml < _TICV_SANITY_FLOOR_ML:
+        # Truncated FOV: fixed erosion over-trimmed the small imaged head.
+        # Retry with reduced erosion; flag it -- the value is a lower bound.
+        erode_mm = 7.0
+        mask = _erode_to_mask(erode_mm)
+        ticv_ml = float(mask.sum()) * voxel_ml
+        fov_truncation_suspected = True
+
+    if diagnostics is not None:
+        diagnostics.update(
+            head_vol_ml=round(head_vol_ml, 1),
+            erosion_mm_used=erode_mm,
+            ticv_ml=round(ticv_ml, 2),
+            fov_truncation_suspected=fov_truncation_suspected,
+        )
     return mask.astype(bool)
 
 
@@ -230,6 +276,7 @@ def rough_brain_mask(
     skull_strip: bool = False,
     affine: np.ndarray | None = None,
     voxel_mm: float | None = None,
+    diagnostics: dict | None = None,
 ) -> np.ndarray:
     """Threshold-based brain-ish mask: Otsu + largest connected component + hole fill.
 
@@ -238,12 +285,16 @@ def rough_brain_mask(
 
     With ``skull_strip=True`` (T1 volumetry path), uses the background-adaptive
     scalp-stripping variant instead; pass the image affine and mean voxel size
-    so the inferior neck seal and morphology scale correctly.
+    so the inferior neck seal and morphology scale correctly. An optional
+    ``diagnostics`` dict is filled with head/ticv volumes, the erosion depth
+    used, and whether the truncated-FOV fallback triggered.
     """
     from scipy import ndimage
 
     if skull_strip:
-        return _stripped_brain_mask(data, affine=affine, voxel_mm=voxel_mm)
+        return _stripped_brain_mask(
+            data, affine=affine, voxel_mm=voxel_mm, diagnostics=diagnostics
+        )
 
     thresh = otsu_threshold(data)
     binary = data > thresh

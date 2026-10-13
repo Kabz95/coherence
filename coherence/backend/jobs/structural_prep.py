@@ -62,7 +62,21 @@ def run(context) -> object:
     voxel_ml = float(np.prod(zooms) / 1000.0)
     voxel_mm = float(np.prod(zooms) ** (1.0 / 3.0))
 
-    mask = rough_brain_mask(norm, skull_strip=True, affine=img.affine, voxel_mm=voxel_mm)
+    mask_diagnostics: dict = {}
+    mask = rough_brain_mask(
+        norm,
+        skull_strip=True,
+        affine=img.affine,
+        voxel_mm=voxel_mm,
+        diagnostics=mask_diagnostics,
+    )
+    if mask_diagnostics.get("fov_truncation_suspected"):
+        manifest.warnings.append(
+            "Truncated FOV suspected (imaged head "
+            f"{mask_diagnostics.get('head_vol_ml')} mL); reduced erosion "
+            f"({mask_diagnostics.get('erosion_mm_used')} mm) applied as fallback. "
+            "TICV is a lower bound -- do not compare to full-FOV timepoints."
+        )
     mask_voxels = int(mask.sum())
 
     prepped_path = work / "prepped-t1.nii.gz"

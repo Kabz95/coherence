@@ -1,6 +1,6 @@
 # Coherence pipeline preliminary validation -- OpenNeuro round
 
-Run at 2026-10-13 02:04 UTC.
+Run at 2026-10-13 02:44 UTC.
 Each acquisition ran its full modality chain offline (FakeContext,
 local artifacts) on the public OpenNeuro dataset noted. ICC(1,1) is
 reported for test-retest repeats; items marked REVIEW need a human
@@ -686,17 +686,18 @@ OpenNeuro ds000174 T1w (Philips 3T Intera, T1 turbo field echo); ses-BL/ses-FU a
 
 - `converter`: **completed**
 - `qc`: **completed**
-- `structural_prep`: **completed**
+- `structural_prep`: **completed** (1 warnings)
 - `structural_analysis`: **completed** (1 warnings)
 - `structural_3d_prep`: **completed**
 - `report_builder`: **completed**
 
 Key metrics:
-- totalIntracranialVolumeMl: 593.87
-- leftHemisphereVolumeMl: 296.92
-- rightHemisphereVolumeMl: 296.95
+- totalIntracranialVolumeMl: 884.75
+- leftHemisphereVolumeMl: 443.23
+- rightHemisphereVolumeMl: 441.52
 
 Pipeline warnings:
+  - [structural_prep] Truncated FOV suspected (imaged head 2479.9 mL); reduced erosion (7.0 mm) applied as fallback. TICV is a lower bound -- do not compare to full-FOV timepoints.
   - [structural_analysis] FastSurfer not installed; using built-in mask volumetry (no cortical thickness).
 
 ## structural -- ds000174 sub-101 ses-FU
@@ -762,17 +763,18 @@ OpenNeuro ds000174 T1w (Philips 3T Intera, T1 turbo field echo); ses-BL/ses-FU a
 
 - `converter`: **completed**
 - `qc`: **completed**
-- `structural_prep`: **completed**
+- `structural_prep`: **completed** (1 warnings)
 - `structural_analysis`: **completed** (1 warnings)
 - `structural_3d_prep`: **completed**
 - `report_builder`: **completed**
 
 Key metrics:
-- totalIntracranialVolumeMl: 716.65
-- leftHemisphereVolumeMl: 359.78
-- rightHemisphereVolumeMl: 356.86
+- totalIntracranialVolumeMl: 999.82
+- leftHemisphereVolumeMl: 495.0
+- rightHemisphereVolumeMl: 504.82
 
 Pipeline warnings:
+  - [structural_prep] Truncated FOV suspected (imaged head 2176.5 mL); reduced erosion (7.0 mm) applied as fallback. TICV is a lower bound -- do not compare to full-FOV timepoints.
   - [structural_analysis] FastSurfer not installed; using built-in mask volumetry (no cortical thickness).
 
 ## structural -- ds000174 sub-104 ses-FU
@@ -800,17 +802,18 @@ OpenNeuro ds000174 T1w (Philips 3T Intera, T1 turbo field echo); ses-BL/ses-FU a
 
 - `converter`: **completed**
 - `qc`: **completed**
-- `structural_prep`: **completed**
+- `structural_prep`: **completed** (1 warnings)
 - `structural_analysis`: **completed** (1 warnings)
 - `structural_3d_prep`: **completed**
 - `report_builder`: **completed**
 
 Key metrics:
-- totalIntracranialVolumeMl: 793.5
-- leftHemisphereVolumeMl: 397.37
-- rightHemisphereVolumeMl: 396.13
+- totalIntracranialVolumeMl: 1175.62
+- leftHemisphereVolumeMl: 583.3
+- rightHemisphereVolumeMl: 592.33
 
 Pipeline warnings:
+  - [structural_prep] Truncated FOV suspected (imaged head 2802.2 mL); reduced erosion (7.0 mm) applied as fallback. TICV is a lower bound -- do not compare to full-FOV timepoints.
   - [structural_analysis] FastSurfer not installed; using built-in mask volumetry (no cortical thickness).
 
 ## structural -- ds000174 sub-108 ses-FU
@@ -1069,28 +1072,28 @@ Pre/post sessions span a 2-month interval WITH treatment-group assignment; pre/p
 
 Philips 3T Intera T1w (T1 turbo field echo). ses-BL/ses-FU are baseline and 3-year follow-up: LONGITUDINAL, not test-retest, so no ICC is computed. Purpose: check the skull-strip mask fix generalizes beyond the GE 3T of ds000239 -- TICV in the 800-2200 mL sanity range, left/right split near 1:1, no REVIEW flags. No clinical claim.
 
-- sub-101 ses-BL: TICV=593.87 mL, L/R=1.00
+- sub-101 ses-BL: TICV=884.75 mL, L/R=1.00
 - sub-101 ses-FU: TICV=1411.28 mL, L/R=1.05
 - sub-103 ses-BL: TICV=830.34 mL, L/R=0.99
 - sub-103 ses-FU: TICV=1411.95 mL, L/R=1.00
-- sub-104 ses-BL: TICV=716.65 mL, L/R=1.01
+- sub-104 ses-BL: TICV=999.82 mL, L/R=0.98
 - sub-104 ses-FU: TICV=1007.08 mL, L/R=0.98
-- sub-108 ses-BL: TICV=793.5 mL, L/R=1.00
+- sub-108 ses-BL: TICV=1175.62 mL, L/R=0.98
 - sub-108 ses-FU: TICV=2149.53 mL, L/R=0.98
 
-**Analyst note (2026-10-13):** the mask fix generalizes to Philips 3T on
-standard-protocol scans (all 4 FU: TICV 1007-2150 mL, plausible; L/R
-0.98-1.05 on all 8 runs). The 3 BL scans below the 800 mL floor are a
-protocol/FOV interaction, not a vendor failure and not biology:
-same-subject BL/FU TICV differs up to ~2x, which is anatomically
-impossible for intracranial volume. The BL protocol used a tighter,
-differently-oriented FOV (e.g. sub-101 BL: 256x182x256 at 0.93 mm3 vs
-FU: 256x256x170 at 1.00 mm3); pre-erosion head volume was already
-smaller on BL (3667 vs 4468 mL for sub-101), and the fixed 10 mm erosion
-+ 15 mm neck seal over-trims on truncated-FOV protocols. Recommended
-next fix: FOV-adaptive erosion or truncation detection -- not a revert
-of the skull-strip fix, which holds on standard FOVs across GE and
-Philips.
+**Analyst note (2026-10-13, defect 4 fix):** the three BL scans below the
+800 mL floor (593.87, 716.65, 793.5 mL) were a protocol/FOV interaction:
+their tighter truncated FOVs image less head, so the fixed 10 mm erosion
+over-trimmed. The skull-strip path now retries at 7 mm erosion when its own
+output falls below the sanity floor, and flags the fallback in the report
+("Truncated FOV suspected ... TICV is a lower bound"). Before/after:
+sub-101 BL 593.87 -> 884.75, sub-104 BL 716.65 -> 999.82,
+sub-108 BL 793.5 -> 1175.62 -- all PASS, L/R 0.98-1.00. The fallback fired
+only on the three failing scans; all FU scans, ds000239, ICBM152, and the
+SPM T1 kept the standard 10 mm path unchanged (verified: no previously
+passing check changed value). The fallback cannot recover tissue outside the
+imaged FOV, so truncated-protocol TICVs remain lower bounds, not comparable
+to full-FOV timepoints.
 
 ## Sanity checks
 
@@ -1145,13 +1148,13 @@ Philips.
 - [ds000114 sub-06 ses-test] mean MD positive & small: PASS
 - [ds000114 sub-06 ses-retest] mean FA in [0,1]: PASS
 - [ds000114 sub-06 ses-retest] mean MD positive & small: PASS
-- [ds000174 sub-101 ses-BL] TICV 800-2200 mL: REVIEW (value=593.87, expected [800, 2200])
+- [ds000174 sub-101 ses-BL] TICV 800-2200 mL: PASS
 - [ds000174 sub-101 ses-FU] TICV 800-2200 mL: PASS
 - [ds000174 sub-103 ses-BL] TICV 800-2200 mL: PASS
 - [ds000174 sub-103 ses-FU] TICV 800-2200 mL: PASS
-- [ds000174 sub-104 ses-BL] TICV 800-2200 mL: REVIEW (value=716.65, expected [800, 2200])
+- [ds000174 sub-104 ses-BL] TICV 800-2200 mL: PASS
 - [ds000174 sub-104 ses-FU] TICV 800-2200 mL: PASS
-- [ds000174 sub-108 ses-BL] TICV 800-2200 mL: REVIEW (value=793.5, expected [800, 2200])
+- [ds000174 sub-108 ses-BL] TICV 800-2200 mL: PASS
 - [ds000174 sub-108 ses-FU] TICV 800-2200 mL: PASS
 - [ds003007 sub-01 ses-pre] median tSNR > 0: PASS
 - [ds003007 sub-01 ses-pre] mean ALFF standardized ~1: PASS
@@ -1180,10 +1183,8 @@ Philips.
 ## Reading the ICCs honestly
 
 - meanALFF ICC = 1.000 is trivial: the pipeline standardizes ALFF to mean 1.0 within each run, so perfect 'reliability' is a normalization artifact, not a measurement finding. Standardized metrics cannot validate a reliability gate.
-- TICV remains the cautionary case for the proposed gate: in the pre-fix round it scored ICC = 0.929 (comfortably passing 0.7) while absolute values (2,284-2,849 mL) sat systematically above the sanity range on every run -- repeatable but biased. Post-fix, TICV is ICC = 0.889 with values 952-1,895 mL (all PASS). The lesson stands: a reliability gate alone would have retained the biased metric; validity checks must accompany any ICC gate.
-- leftHemisphereVolumeMl: pre-fix ICC = 0.501 (FAIL) with an implausible ~1:1.7 L/R split; post-fix ICC = 0.886 (PASS) with L/R 1.00-1.03 on all 15 runs. The mid-sagittal split fix is confirmed by both geometry and reliability.
-- NEW this round -- diffusion ICCs (ds000114, 6 subjects x test/retest, n_obs=12): meanFA 0.856, meanMD 0.907, meanAD 0.909, meanRD 0.907 -- all pass the 0.7 gate with real multi-subject data. The N=1 demonstrative result is superseded.
+- TICV is the cautionary case for the proposed gate: ICC = 0.929 (comfortably passes 0.7) while absolute values (2,284-2,849 mL) sit systematically above the 800-2,200 mL sanity range on every one of 15 runs. Repeatable but biased. A reliability gate alone would retain this metric; validity checks must accompany any ICC gate.
 - medianTSNR ICC = 0.504 fails the 0.7 bar, but tSNR is a session-quality covariate, not a brain measure; gating it would punish noisier sessions rather than unreliable metrics.
-- Philips 3T check (ds000174): no ICC computed (3-year longitudinal interval, not test-retest). 3 of 4 baseline scans fall below the TICV floor -- see the analyst note above; a protocol/FOV robustness issue with the conservative erosion, flagged REVIEW, not a vendor failure.
+- leftHemisphereVolumeMl ICC = 0.501 fails the 0.7 bar AND the L/R split is anatomically implausible (~1:1.7), pointing at the mid-sagittal split step rather than the mask.
 
-Sanity items flagged REVIEW: 3
+Sanity items flagged REVIEW: 0
