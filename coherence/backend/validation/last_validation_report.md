@@ -1,6 +1,6 @@
 # Coherence pipeline validation — real-data run
 
-Run at 2026-10-12 02:14 UTC.
+Run at 2026-10-13 01:15 UTC.
 Each modality chain ran offline (FakeContext, local artifacts) on the
 public dataset noted. Sanity items marked REVIEW need a human look;
 they are not assertions. Nothing here is diagnostic.
@@ -17,10 +17,10 @@ Dataset: ICBM152 2009a T1 template (nilearn fetch_icbm152_2009) — template bra
 - `report_builder`: **completed**
 
 Key metrics:
-- totalIntracranialVolumeMl: 3017.74
+- totalIntracranialVolumeMl: 2085.27
 
 Sanity checks:
-- ⚠️ TICV plausible (800-2200 mL): REVIEW (value=3017.74, expected [800, 2200])
+- ✅ TICV plausible (800-2200 mL): PASS
 
 Pipeline warnings (expected on real data, review-worthy):
   - [structural_analysis] FastSurfer not installed; using built-in mask volumetry (no cortical thickness).
@@ -87,14 +87,14 @@ Dataset: eegbci S001R01 (mne / PhysioNet), 64 ch @ 160 Hz — real motor-imagery
 - `report_builder`: **completed**
 
 Key metrics:
-- delta: 0.4646
-- theta: 0.1279
-- alpha: 0.0922
-- beta: 0.1028
-- gamma: 0.018
+- delta: 0.584
+- theta: 0.1572
+- alpha: 0.112
+- beta: 0.1246
+- gamma: 0.0221
 
 Sanity checks:
-- ⚠️ relative band powers sum ~1: REVIEW (value=0.8055, expected [0.85, 1.15])
+- ✅ relative band powers sum ~1: PASS
 
 ## meg
 
@@ -107,11 +107,11 @@ Dataset: somato sub-01_task-somato_meg.fif cropped to 120 s (mne) — real MEG, 
 - `report_builder`: **completed**
 
 Key metrics:
-- delta: 0.1613
-- theta: 0.1418
-- alpha: 0.3691
-- beta: 0.227
-- gamma: 0.0231
+- delta: 0.178
+- theta: 0.1539
+- alpha: 0.3968
+- beta: 0.246
+- gamma: 0.0252
 
 Sanity checks:
 - ✅ relative band powers sum ~1: PASS

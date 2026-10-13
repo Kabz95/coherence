@@ -1,6 +1,7 @@
 """Structural measurements from the prepared T1 and rough brain mask.
 
-Real, honestly-labelled metrics (method: Otsu-threshold mask volumetry):
+Real, honestly-labelled metrics (method: background-adaptive scalp-stripped
+mask volumetry):
 - totalIntracranialVolumeMl: mask voxel count x voxel volume (rough estimate)
 - leftHemisphereVolumeMl / rightHemisphereVolumeMl: mid-sagittal split of the
   RAS-oriented mask
@@ -70,12 +71,14 @@ def run(context) -> object:
         vol = np.asanyarray(data[..., 0] if data.ndim == 4 else data, dtype=np.float64)
         lo, hi = np.percentile(vol[np.isfinite(vol)], [0.5, 99.5])
         vol = np.clip((vol - lo) / max(hi - lo, 1e-9), 0, 1).astype(np.float32)
-        mask = rough_brain_mask(vol)
+        zooms = img.header.get_zooms()[:3]
+        voxel_mm = float(np.prod(zooms) ** (1.0 / 3.0))
+        mask = rough_brain_mask(vol, skull_strip=True, affine=img.affine, voxel_mm=voxel_mm)
         manifest.inputs["sourceFile"] = meta.get("name")
 
     voxel_ml = voxel_volume_ml(img)
     mask_voxels = int(mask.sum())
-    hemis = hemisphere_volumes_ml(mask, voxel_ml)
+    hemis = hemisphere_volumes_ml(mask, voxel_ml, affine=img.affine)
     stats = intensity_stats(vol, mask)
 
     metrics = {
@@ -88,16 +91,16 @@ def run(context) -> object:
     }
     methods = {
         "totalIntracranialVolumeMl": {
-            "method": "Otsu-threshold rough brain mask volumetry (voxel count x voxel volume)",
-            "limitations": "Rough estimate, not a FreeSurfer-grade segmentation; compare only same-protocol timepoints.",
+            "method": "Background-adaptive rough brain mask volumetry with scalp-strip (voxel count x voxel volume)",
+            "limitations": "Rough estimate, not a FreeSurfer-grade segmentation; conservative by design (net ~6 mm inside the head surface; inferior 15 mm excluded); compare only same-protocol timepoints.",
         },
         "leftHemisphereVolumeMl": {
-            "method": "Mid-sagittal split of the RAS-oriented rough mask",
-            "limitations": "Hemisphere split is geometric, not anatomical.",
+            "method": "Mid-sagittal split of the rough mask at its centroid along the affine-derived left-right axis",
+            "limitations": "Hemisphere split is geometric, not anatomical; does not correct for head rotation.",
         },
         "rightHemisphereVolumeMl": {
-            "method": "Mid-sagittal split of the RAS-oriented rough mask",
-            "limitations": "Hemisphere split is geometric, not anatomical.",
+            "method": "Mid-sagittal split of the rough mask at its centroid along the affine-derived left-right axis",
+            "limitations": "Hemisphere split is geometric, not anatomical; does not correct for head rotation.",
         },
         "meanMaskIntensity": {
             "method": "Mean of percentile-normalized intensity inside the rough mask",

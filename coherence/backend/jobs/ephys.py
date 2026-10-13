@@ -263,7 +263,11 @@ def analyze(context, job_kind: str, modality: str):
     freqs, psd = signal.welch(data, fs=sfreq, nperseg=min(1024, data.shape[1]), axis=1)
     # Relative epsilon: MEG data lives at ~1e-13 T, so an absolute 1e-18 guard
     # would swallow the true total power. Guard only against exact zeros.
-    totals = psd.sum(axis=1, keepdims=True)
+    # The normalizer is the 1-40 Hz band power (matching the documented method
+    # and the BANDS tiling), NOT broadband power: sub-1 Hz drift that survives
+    # the high-pass must not leak into the denominator.
+    band_total_idx = (freqs >= 1.0) & (freqs < 40.0)
+    totals = psd[:, band_total_idx].sum(axis=1, keepdims=True)
     safe_totals = np.where(totals > 0, totals, 1e-300)
 
     band_means: dict[str, float] = {}

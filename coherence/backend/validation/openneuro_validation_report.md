@@ -1,6 +1,6 @@
 # Coherence pipeline validation -- OpenNeuro round
 
-Run at 2026-10-13 00:15 UTC.
+Run at 2026-10-13 01:14 UTC.
 Each acquisition ran its full modality chain offline (FakeContext,
 local artifacts) on the public OpenNeuro dataset noted. ICC(1,1) is
 reported for test-retest repeats; items marked REVIEW need a human
@@ -28,9 +28,9 @@ Maclaren et al. 2014 test-retest T1w (GE 3T ADNI IR-SPGR), via OpenNeuro ds00023
 - `report_builder`: **completed**
 
 Key metrics:
-- totalIntracranialVolumeMl: 2876.17
-- leftHemisphereVolumeMl: 992.48
-- rightHemisphereVolumeMl: 1883.69
+- totalIntracranialVolumeMl: 1821.43
+- leftHemisphereVolumeMl: 915.8
+- rightHemisphereVolumeMl: 905.63
 
 Pipeline warnings:
   - [structural_analysis] FastSurfer not installed; using built-in mask volumetry (no cortical thickness).
@@ -47,9 +47,9 @@ Maclaren et al. 2014 test-retest T1w (GE 3T ADNI IR-SPGR), via OpenNeuro ds00023
 - `report_builder`: **completed**
 
 Key metrics:
-- totalIntracranialVolumeMl: 2688.92
-- leftHemisphereVolumeMl: 956.9
-- rightHemisphereVolumeMl: 1732.02
+- totalIntracranialVolumeMl: 1656.87
+- leftHemisphereVolumeMl: 846.96
+- rightHemisphereVolumeMl: 809.91
 
 Pipeline warnings:
   - [structural_analysis] FastSurfer not installed; using built-in mask volumetry (no cortical thickness).
@@ -66,9 +66,9 @@ Maclaren et al. 2014 test-retest T1w (GE 3T ADNI IR-SPGR), via OpenNeuro ds00023
 - `report_builder`: **completed**
 
 Key metrics:
-- totalIntracranialVolumeMl: 2771.08
-- leftHemisphereVolumeMl: 1012.5
-- rightHemisphereVolumeMl: 1758.58
+- totalIntracranialVolumeMl: 1873.63
+- leftHemisphereVolumeMl: 948.6
+- rightHemisphereVolumeMl: 925.03
 
 Pipeline warnings:
   - [structural_analysis] FastSurfer not installed; using built-in mask volumetry (no cortical thickness).
@@ -85,9 +85,9 @@ Maclaren et al. 2014 test-retest T1w (GE 3T ADNI IR-SPGR), via OpenNeuro ds00023
 - `report_builder`: **completed**
 
 Key metrics:
-- totalIntracranialVolumeMl: 2756.75
-- leftHemisphereVolumeMl: 910.78
-- rightHemisphereVolumeMl: 1845.97
+- totalIntracranialVolumeMl: 1854.24
+- leftHemisphereVolumeMl: 928.46
+- rightHemisphereVolumeMl: 925.78
 
 Pipeline warnings:
   - [structural_analysis] FastSurfer not installed; using built-in mask volumetry (no cortical thickness).
@@ -104,9 +104,9 @@ Maclaren et al. 2014 test-retest T1w (GE 3T ADNI IR-SPGR), via OpenNeuro ds00023
 - `report_builder`: **completed**
 
 Key metrics:
-- totalIntracranialVolumeMl: 2830.39
-- leftHemisphereVolumeMl: 1045.93
-- rightHemisphereVolumeMl: 1784.46
+- totalIntracranialVolumeMl: 1431.42
+- leftHemisphereVolumeMl: 717.33
+- rightHemisphereVolumeMl: 714.09
 
 Pipeline warnings:
   - [structural_analysis] FastSurfer not installed; using built-in mask volumetry (no cortical thickness).
@@ -123,9 +123,9 @@ Maclaren et al. 2014 test-retest T1w (GE 3T ADNI IR-SPGR), via OpenNeuro ds00023
 - `report_builder`: **completed**
 
 Key metrics:
-- totalIntracranialVolumeMl: 2812.74
-- leftHemisphereVolumeMl: 1138.59
-- rightHemisphereVolumeMl: 1674.15
+- totalIntracranialVolumeMl: 1895.22
+- leftHemisphereVolumeMl: 950.46
+- rightHemisphereVolumeMl: 944.75
 
 Pipeline warnings:
   - [structural_analysis] FastSurfer not installed; using built-in mask volumetry (no cortical thickness).
@@ -142,9 +142,9 @@ Maclaren et al. 2014 test-retest T1w (GE 3T ADNI IR-SPGR), via OpenNeuro ds00023
 - `report_builder`: **completed**
 
 Key metrics:
-- totalIntracranialVolumeMl: 2758.71
-- leftHemisphereVolumeMl: 1182.1
-- rightHemisphereVolumeMl: 1576.61
+- totalIntracranialVolumeMl: 1864.28
+- leftHemisphereVolumeMl: 937.39
+- rightHemisphereVolumeMl: 926.89
 
 Pipeline warnings:
   - [structural_analysis] FastSurfer not installed; using built-in mask volumetry (no cortical thickness).
@@ -161,9 +161,9 @@ Maclaren et al. 2014 test-retest T1w (GE 3T ADNI IR-SPGR), via OpenNeuro ds00023
 - `report_builder`: **completed**
 
 Key metrics:
-- totalIntracranialVolumeMl: 2848.99
-- leftHemisphereVolumeMl: 1273.97
-- rightHemisphereVolumeMl: 1575.03
+- totalIntracranialVolumeMl: 1542.35
+- leftHemisphereVolumeMl: 769.9
+- rightHemisphereVolumeMl: 772.45
 
 Pipeline warnings:
   - [structural_analysis] FastSurfer not installed; using built-in mask volumetry (no cortical thickness).
@@ -180,9 +180,9 @@ Maclaren et al. 2014 test-retest T1w (GE 3T ADNI IR-SPGR), via OpenNeuro ds00023
 - `report_builder`: **completed**
 
 Key metrics:
-- totalIntracranialVolumeMl: 2849.34
-- leftHemisphereVolumeMl: 1118.9
-- rightHemisphereVolumeMl: 1730.44
+- totalIntracranialVolumeMl: 1527.32
+- leftHemisphereVolumeMl: 758.68
+- rightHemisphereVolumeMl: 768.65
 
 Pipeline warnings:
   - [structural_analysis] FastSurfer not installed; using built-in mask volumetry (no cortical thickness).
@@ -199,9 +199,9 @@ Maclaren et al. 2014 test-retest T1w (GE 3T ADNI IR-SPGR), via OpenNeuro ds00023
 - `report_builder`: **completed**
 
 Key metrics:
-- totalIntracranialVolumeMl: 2752.79
-- leftHemisphereVolumeMl: 1002.28
-- rightHemisphereVolumeMl: 1750.51
+- totalIntracranialVolumeMl: 1849.36
+- leftHemisphereVolumeMl: 916.64
+- rightHemisphereVolumeMl: 932.72
 
 Pipeline warnings:
   - [structural_analysis] FastSurfer not installed; using built-in mask volumetry (no cortical thickness).
@@ -218,9 +218,9 @@ Maclaren et al. 2014 test-retest T1w (GE 3T ADNI IR-SPGR), via OpenNeuro ds00023
 - `report_builder`: **completed**
 
 Key metrics:
-- totalIntracranialVolumeMl: 2409.17
-- leftHemisphereVolumeMl: 1000.54
-- rightHemisphereVolumeMl: 1408.63
+- totalIntracranialVolumeMl: 952.04
+- leftHemisphereVolumeMl: 479.58
+- rightHemisphereVolumeMl: 472.46
 
 Pipeline warnings:
   - [structural_analysis] FastSurfer not installed; using built-in mask volumetry (no cortical thickness).
@@ -237,9 +237,9 @@ Maclaren et al. 2014 test-retest T1w (GE 3T ADNI IR-SPGR), via OpenNeuro ds00023
 - `report_builder`: **completed**
 
 Key metrics:
-- totalIntracranialVolumeMl: 2484.32
-- leftHemisphereVolumeMl: 1122.44
-- rightHemisphereVolumeMl: 1361.88
+- totalIntracranialVolumeMl: 961.93
+- leftHemisphereVolumeMl: 481.8
+- rightHemisphereVolumeMl: 480.13
 
 Pipeline warnings:
   - [structural_analysis] FastSurfer not installed; using built-in mask volumetry (no cortical thickness).
@@ -256,9 +256,9 @@ Maclaren et al. 2014 test-retest T1w (GE 3T ADNI IR-SPGR), via OpenNeuro ds00023
 - `report_builder`: **completed**
 
 Key metrics:
-- totalIntracranialVolumeMl: 2283.95
-- leftHemisphereVolumeMl: 936.43
-- rightHemisphereVolumeMl: 1347.52
+- totalIntracranialVolumeMl: 1011.53
+- leftHemisphereVolumeMl: 497.19
+- rightHemisphereVolumeMl: 514.34
 
 Pipeline warnings:
   - [structural_analysis] FastSurfer not installed; using built-in mask volumetry (no cortical thickness).
@@ -275,9 +275,9 @@ Maclaren et al. 2014 test-retest T1w (GE 3T ADNI IR-SPGR), via OpenNeuro ds00023
 - `report_builder`: **completed**
 
 Key metrics:
-- totalIntracranialVolumeMl: 2380.76
-- leftHemisphereVolumeMl: 1050.03
-- rightHemisphereVolumeMl: 1330.72
+- totalIntracranialVolumeMl: 990.8
+- leftHemisphereVolumeMl: 502.11
+- rightHemisphereVolumeMl: 488.69
 
 Pipeline warnings:
   - [structural_analysis] FastSurfer not installed; using built-in mask volumetry (no cortical thickness).
@@ -294,9 +294,9 @@ Maclaren et al. 2014 test-retest T1w (GE 3T ADNI IR-SPGR), via OpenNeuro ds00023
 - `report_builder`: **completed**
 
 Key metrics:
-- totalIntracranialVolumeMl: 2345.71
-- leftHemisphereVolumeMl: 992.31
-- rightHemisphereVolumeMl: 1353.41
+- totalIntracranialVolumeMl: 979.41
+- leftHemisphereVolumeMl: 499.78
+- rightHemisphereVolumeMl: 479.63
 
 Pipeline warnings:
   - [structural_analysis] FastSurfer not installed; using built-in mask volumetry (no cortical thickness).
@@ -606,11 +606,11 @@ OpenNeuro ds000117 face-processing MEG (Neuromag 306 ch), cropped to 120 s for v
 - `report_builder`: **completed**
 
 Key metrics:
-- delta: 0.2711
-- theta: 0.0951
-- alpha: 0.1065
-- beta: 0.1985
-- gamma: 0.0399
+- delta: 0.4086
+- theta: 0.1295
+- alpha: 0.1393
+- beta: 0.27
+- gamma: 0.0527
 
 ## eeg -- ds002718 sub-002 run-01
 
@@ -623,11 +623,11 @@ OpenNeuro ds002718 face-recognition EEG (EEGLAB .set, 250 Hz), converted to EDF 
 - `report_builder`: **completed**
 
 Key metrics:
-- delta: 0.3148
-- theta: 0.0678
-- alpha: 0.1592
-- beta: 0.0677
-- gamma: 0.0173
+- delta: 0.542
+- theta: 0.1039
+- alpha: 0.2284
+- beta: 0.0989
+- gamma: 0.0267
 
 ## Test-retest reliability (ICC(1,1))
 
@@ -635,26 +635,26 @@ Computed across repeated acquisitions of the same subject. The manuscript's prop
 
 ### ds000239 (structural: 3 subjects x 5 repeats)
 
-- totalIntracranialVolumeMl: ICC(1,1) = 0.929 (n_subj=3, n_obs=15)
-- leftHemisphereVolumeMl: ICC(1,1) = 0.501 (n_subj=3, n_obs=15) -- **would FAIL the 0.7 gate**
-- rightHemisphereVolumeMl: ICC(1,1) = 0.928 (n_subj=3, n_obs=15)
+- totalIntracranialVolumeMl: ICC(1,1) = 0.889 (n_subj=3, n_obs=15)
+- leftHemisphereVolumeMl: ICC(1,1) = 0.886 (n_subj=3, n_obs=15)
+- rightHemisphereVolumeMl: ICC(1,1) = 0.890 (n_subj=3, n_obs=15)
 
 Repeat values:
-  - sub-01 run-01: {'totalIntracranialVolumeMl': 2876.17, 'leftHemisphereVolumeMl': 992.48, 'rightHemisphereVolumeMl': 1883.69}
-  - sub-01 run-02: {'totalIntracranialVolumeMl': 2688.92, 'leftHemisphereVolumeMl': 956.9, 'rightHemisphereVolumeMl': 1732.02}
-  - sub-01 run-03: {'totalIntracranialVolumeMl': 2771.08, 'leftHemisphereVolumeMl': 1012.5, 'rightHemisphereVolumeMl': 1758.58}
-  - sub-01 run-04: {'totalIntracranialVolumeMl': 2756.75, 'leftHemisphereVolumeMl': 910.78, 'rightHemisphereVolumeMl': 1845.97}
-  - sub-01 run-05: {'totalIntracranialVolumeMl': 2830.39, 'leftHemisphereVolumeMl': 1045.93, 'rightHemisphereVolumeMl': 1784.46}
-  - sub-02 run-01: {'totalIntracranialVolumeMl': 2812.74, 'leftHemisphereVolumeMl': 1138.59, 'rightHemisphereVolumeMl': 1674.15}
-  - sub-02 run-02: {'totalIntracranialVolumeMl': 2758.71, 'leftHemisphereVolumeMl': 1182.1, 'rightHemisphereVolumeMl': 1576.61}
-  - sub-02 run-03: {'totalIntracranialVolumeMl': 2848.99, 'leftHemisphereVolumeMl': 1273.97, 'rightHemisphereVolumeMl': 1575.03}
-  - sub-02 run-04: {'totalIntracranialVolumeMl': 2849.34, 'leftHemisphereVolumeMl': 1118.9, 'rightHemisphereVolumeMl': 1730.44}
-  - sub-02 run-05: {'totalIntracranialVolumeMl': 2752.79, 'leftHemisphereVolumeMl': 1002.28, 'rightHemisphereVolumeMl': 1750.51}
-  - sub-03 run-01: {'totalIntracranialVolumeMl': 2409.17, 'leftHemisphereVolumeMl': 1000.54, 'rightHemisphereVolumeMl': 1408.63}
-  - sub-03 run-02: {'totalIntracranialVolumeMl': 2484.32, 'leftHemisphereVolumeMl': 1122.44, 'rightHemisphereVolumeMl': 1361.88}
-  - sub-03 run-03: {'totalIntracranialVolumeMl': 2283.95, 'leftHemisphereVolumeMl': 936.43, 'rightHemisphereVolumeMl': 1347.52}
-  - sub-03 run-04: {'totalIntracranialVolumeMl': 2380.76, 'leftHemisphereVolumeMl': 1050.03, 'rightHemisphereVolumeMl': 1330.72}
-  - sub-03 run-05: {'totalIntracranialVolumeMl': 2345.71, 'leftHemisphereVolumeMl': 992.31, 'rightHemisphereVolumeMl': 1353.41}
+  - sub-01 run-01: {'totalIntracranialVolumeMl': 1821.43, 'leftHemisphereVolumeMl': 915.8, 'rightHemisphereVolumeMl': 905.63}
+  - sub-01 run-02: {'totalIntracranialVolumeMl': 1656.87, 'leftHemisphereVolumeMl': 846.96, 'rightHemisphereVolumeMl': 809.91}
+  - sub-01 run-03: {'totalIntracranialVolumeMl': 1873.63, 'leftHemisphereVolumeMl': 948.6, 'rightHemisphereVolumeMl': 925.03}
+  - sub-01 run-04: {'totalIntracranialVolumeMl': 1854.24, 'leftHemisphereVolumeMl': 928.46, 'rightHemisphereVolumeMl': 925.78}
+  - sub-01 run-05: {'totalIntracranialVolumeMl': 1431.42, 'leftHemisphereVolumeMl': 717.33, 'rightHemisphereVolumeMl': 714.09}
+  - sub-02 run-01: {'totalIntracranialVolumeMl': 1895.22, 'leftHemisphereVolumeMl': 950.46, 'rightHemisphereVolumeMl': 944.75}
+  - sub-02 run-02: {'totalIntracranialVolumeMl': 1864.28, 'leftHemisphereVolumeMl': 937.39, 'rightHemisphereVolumeMl': 926.89}
+  - sub-02 run-03: {'totalIntracranialVolumeMl': 1542.35, 'leftHemisphereVolumeMl': 769.9, 'rightHemisphereVolumeMl': 772.45}
+  - sub-02 run-04: {'totalIntracranialVolumeMl': 1527.32, 'leftHemisphereVolumeMl': 758.68, 'rightHemisphereVolumeMl': 768.65}
+  - sub-02 run-05: {'totalIntracranialVolumeMl': 1849.36, 'leftHemisphereVolumeMl': 916.64, 'rightHemisphereVolumeMl': 932.72}
+  - sub-03 run-01: {'totalIntracranialVolumeMl': 952.04, 'leftHemisphereVolumeMl': 479.58, 'rightHemisphereVolumeMl': 472.46}
+  - sub-03 run-02: {'totalIntracranialVolumeMl': 961.93, 'leftHemisphereVolumeMl': 481.8, 'rightHemisphereVolumeMl': 480.13}
+  - sub-03 run-03: {'totalIntracranialVolumeMl': 1011.53, 'leftHemisphereVolumeMl': 497.19, 'rightHemisphereVolumeMl': 514.34}
+  - sub-03 run-04: {'totalIntracranialVolumeMl': 990.8, 'leftHemisphereVolumeMl': 502.11, 'rightHemisphereVolumeMl': 488.69}
+  - sub-03 run-05: {'totalIntracranialVolumeMl': 979.41, 'leftHemisphereVolumeMl': 499.78, 'rightHemisphereVolumeMl': 479.63}
 
 ### ds000114-fmri (fmri: 3 subjects x 2 repeats)
 
@@ -694,21 +694,21 @@ Pre/post sessions span a 2-month interval WITH treatment-group assignment; pre/p
 
 ## Sanity checks
 
-- [ds000239 sub-01 run-01] TICV 800-2200 mL: REVIEW (REVIEW (value=2876.17, expected [800, 2200]))
-- [ds000239 sub-01 run-02] TICV 800-2200 mL: REVIEW (REVIEW (value=2688.92, expected [800, 2200]))
-- [ds000239 sub-01 run-03] TICV 800-2200 mL: REVIEW (REVIEW (value=2771.08, expected [800, 2200]))
-- [ds000239 sub-01 run-04] TICV 800-2200 mL: REVIEW (REVIEW (value=2756.75, expected [800, 2200]))
-- [ds000239 sub-01 run-05] TICV 800-2200 mL: REVIEW (REVIEW (value=2830.39, expected [800, 2200]))
-- [ds000239 sub-02 run-01] TICV 800-2200 mL: REVIEW (REVIEW (value=2812.74, expected [800, 2200]))
-- [ds000239 sub-02 run-02] TICV 800-2200 mL: REVIEW (REVIEW (value=2758.71, expected [800, 2200]))
-- [ds000239 sub-02 run-03] TICV 800-2200 mL: REVIEW (REVIEW (value=2848.99, expected [800, 2200]))
-- [ds000239 sub-02 run-04] TICV 800-2200 mL: REVIEW (REVIEW (value=2849.34, expected [800, 2200]))
-- [ds000239 sub-02 run-05] TICV 800-2200 mL: REVIEW (REVIEW (value=2752.79, expected [800, 2200]))
-- [ds000239 sub-03 run-01] TICV 800-2200 mL: REVIEW (REVIEW (value=2409.17, expected [800, 2200]))
-- [ds000239 sub-03 run-02] TICV 800-2200 mL: REVIEW (REVIEW (value=2484.32, expected [800, 2200]))
-- [ds000239 sub-03 run-03] TICV 800-2200 mL: REVIEW (REVIEW (value=2283.95, expected [800, 2200]))
-- [ds000239 sub-03 run-04] TICV 800-2200 mL: REVIEW (REVIEW (value=2380.76, expected [800, 2200]))
-- [ds000239 sub-03 run-05] TICV 800-2200 mL: REVIEW (REVIEW (value=2345.71, expected [800, 2200]))
+- [ds000239 sub-01 run-01] TICV 800-2200 mL: PASS
+- [ds000239 sub-01 run-02] TICV 800-2200 mL: PASS
+- [ds000239 sub-01 run-03] TICV 800-2200 mL: PASS
+- [ds000239 sub-01 run-04] TICV 800-2200 mL: PASS
+- [ds000239 sub-01 run-05] TICV 800-2200 mL: PASS
+- [ds000239 sub-02 run-01] TICV 800-2200 mL: PASS
+- [ds000239 sub-02 run-02] TICV 800-2200 mL: PASS
+- [ds000239 sub-02 run-03] TICV 800-2200 mL: PASS
+- [ds000239 sub-02 run-04] TICV 800-2200 mL: PASS
+- [ds000239 sub-02 run-05] TICV 800-2200 mL: PASS
+- [ds000239 sub-03 run-01] TICV 800-2200 mL: PASS
+- [ds000239 sub-03 run-02] TICV 800-2200 mL: PASS
+- [ds000239 sub-03 run-03] TICV 800-2200 mL: PASS
+- [ds000239 sub-03 run-04] TICV 800-2200 mL: PASS
+- [ds000239 sub-03 run-05] TICV 800-2200 mL: PASS
 - [ds000114 sub-01 ses-test] median tSNR > 0: PASS
 - [ds000114 sub-01 ses-test] mean ALFF standardized ~1: PASS
 - [ds000114 sub-01 ses-retest] median tSNR > 0: PASS
@@ -737,8 +737,8 @@ Pre/post sessions span a 2-month interval WITH treatment-group assignment; pre/p
 - [ds003007 sub-22 ses-pre] mean ALFF standardized ~1: PASS
 - [ds003007 sub-22 ses-post] median tSNR > 0: PASS
 - [ds003007 sub-22 ses-post] mean ALFF standardized ~1: PASS
-- [ds000117 sub-01 run-01] relative band powers sum ~1: REVIEW (REVIEW (value=0.7111000000000001, expected [0.85, 1.15]))
-- [ds002718 sub-002 run-01] relative band powers sum ~1: REVIEW (REVIEW (value=0.6268, expected [0.85, 1.15]))
+- [ds000117 sub-01 run-01] relative band powers sum ~1: PASS
+- [ds002718 sub-002 run-01] relative band powers sum ~1: PASS
 
 ## Limitations
 
@@ -752,8 +752,8 @@ Pre/post sessions span a 2-month interval WITH treatment-group assignment; pre/p
 ## Reading the ICCs honestly
 
 - meanALFF ICC = 1.000 is trivial: the pipeline standardizes ALFF to mean 1.0 within each run, so perfect 'reliability' is a normalization artifact, not a measurement finding. Standardized metrics cannot validate a reliability gate.
-- TICV is the cautionary case for the proposed gate: ICC = 0.929 (comfortably passes 0.7) while absolute values (2,284–2,849 mL) sit systematically above the 800–2,200 mL sanity range on every one of 15 runs. Repeatable but biased. A reliability gate alone would retain this metric; validity checks must accompany any ICC gate.
+- TICV is the cautionary case for the proposed gate: ICC = 0.929 (comfortably passes 0.7) while absolute values (2,284-2,849 mL) sit systematically above the 800-2,200 mL sanity range on every one of 15 runs. Repeatable but biased. A reliability gate alone would retain this metric; validity checks must accompany any ICC gate.
 - medianTSNR ICC = 0.504 fails the 0.7 bar, but tSNR is a session-quality covariate, not a brain measure; gating it would punish noisier sessions rather than unreliable metrics.
 - leftHemisphereVolumeMl ICC = 0.501 fails the 0.7 bar AND the L/R split is anatomically implausible (~1:1.7), pointing at the mid-sagittal split step rather than the mask.
 
-Sanity items flagged REVIEW: 17
+Sanity items flagged REVIEW: 0

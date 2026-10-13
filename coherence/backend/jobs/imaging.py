@@ -133,13 +133,117 @@ def otsu_threshold(data: np.ndarray, nbins: int = 256) -> float:
     return float(thresh)
 
 
-def rough_brain_mask(data: np.ndarray) -> np.ndarray:
+def _background_level(data: np.ndarray, corner: int = 16) -> float:
+    """Estimate the background (air/padding) level from the FOV corners.
+
+    Corners are far from the head in typical acquisitions; the 99th
+    percentile over all eight corner cubes is robust to a stray bright
+    voxel while tracking templates with non-zero padding.
+    """
+    arr = np.asanyarray(data)
+    s = arr.shape
+    parts = []
+    for i in (0, 1):
+        for j in (0, 1):
+            for k in (0, 1):
+                blk = arr[
+                    i * (s[0] - corner): i * (s[0] - corner) + corner,
+                    j * (s[1] - corner): j * (s[1] - corner) + corner,
+                    k * (s[2] - corner): k * (s[2] - corner) + corner,
+                ]
+                parts.append(np.ravel(blk))
+    vals = np.concatenate(parts)
+    vals = vals[np.isfinite(vals)]
+    if vals.size == 0:
+        return 0.0
+    return float(np.percentile(vals, 99))
+
+
+def _stripped_brain_mask(
+    data: np.ndarray,
+    affine: np.ndarray | None = None,
+    voxel_mm: float | None = None,
+) -> np.ndarray:
+    """Scalp-stripped rough brain mask for T1 volumetry.
+
+    The plain Otsu mask systematically over-segments on T1 (scalp/skull/face
+    join the brain through soft-tissue bridges; ~2x plausible TICV on
+    ds000239 and ICBM152). This variant:
+
+    1. thresholds just above the corner-estimated background (adaptive to
+       templates with non-zero padding),
+    2. seals the inferior neck opening (S-I axis from the affine) so
+       hole-filling closes the head into a solid,
+    3. erodes ~10 mm past scalp+skull, keeps the largest surviving core,
+    4. dilates ~4 mm back and intersects with the head (net ~6 mm inside the
+       head surface: conservative by design).
+
+    Calibrated on ds000239 (GE 3T), ICBM152, and SPM T1: TICV lands in
+    800-2200 mL. Rough estimate, NOT a segmentation.
+    """
+    from scipy import ndimage
+
+    vm = float(voxel_mm) if voxel_mm and voxel_mm > 0 else 1.0
+    arr = np.asanyarray(data, dtype=np.float64)
+    thresh = _background_level(arr) + 0.08
+    binary = arr > thresh
+
+    if affine is not None:
+        a = np.asarray(affine, dtype=float)
+        if a.shape == (4, 4):
+            # Inferior neck opening: seal it before hole-filling.
+            si_axis = int(np.argmax(np.abs(a[2, :3])))
+            n_cut = int(round(15.0 / vm))
+            sl = [slice(None), slice(None), slice(None)]
+            if a[2, si_axis] > 0:  # increasing index -> superior
+                sl[si_axis] = slice(0, min(n_cut, binary.shape[si_axis]))
+            else:
+                sl[si_axis] = slice(
+                    max(0, binary.shape[si_axis] - n_cut), binary.shape[si_axis]
+                )
+            binary[tuple(sl)] = False
+
+    labeled, n_labels = ndimage.label(binary)
+    if n_labels == 0:
+        return np.zeros_like(data, dtype=bool)
+    sizes = ndimage.sum(binary, labeled, range(1, n_labels + 1))
+    head = labeled == (int(np.argmax(sizes)) + 1)
+    head = ndimage.binary_fill_holes(head)
+
+    erode_it = max(1, int(round(10.0 / vm)))
+    dilate_it = max(1, int(round(4.0 / vm)))
+    eroded = ndimage.binary_erosion(head, structure=np.ones((3, 3, 3)), iterations=erode_it)
+    lab2, n2 = ndimage.label(eroded)
+    if n2 == 0:
+        return np.zeros_like(data, dtype=bool)
+    sizes2 = ndimage.sum(eroded, lab2, range(1, n2 + 1))
+    core = lab2 == (int(np.argmax(sizes2)) + 1)
+    core = ndimage.binary_fill_holes(core)
+    mask = ndimage.binary_dilation(core, structure=np.ones((3, 3, 3)), iterations=dilate_it)
+    mask = ndimage.binary_fill_holes(mask) & head
+    return mask.astype(bool)
+
+
+def rough_brain_mask(
+    data: np.ndarray,
+    *,
+    skull_strip: bool = False,
+    affine: np.ndarray | None = None,
+    voxel_mm: float | None = None,
+) -> np.ndarray:
     """Threshold-based brain-ish mask: Otsu + largest connected component + hole fill.
 
     This is a rough estimate, NOT a segmentation. Suitable for volume
     estimation and QC; not for morphometry claims.
+
+    With ``skull_strip=True`` (T1 volumetry path), uses the background-adaptive
+    scalp-stripping variant instead; pass the image affine and mean voxel size
+    so the inferior neck seal and morphology scale correctly.
     """
     from scipy import ndimage
+
+    if skull_strip:
+        return _stripped_brain_mask(data, affine=affine, voxel_mm=voxel_mm)
 
     thresh = otsu_threshold(data)
     binary = data > thresh
@@ -169,11 +273,38 @@ def intensity_stats(data: np.ndarray, mask: np.ndarray | None = None) -> dict[st
     }
 
 
-def hemisphere_volumes_ml(mask: np.ndarray, voxel_ml: float) -> dict[str, float]:
-    """Split a RAS-oriented mask at the mid-sagittal plane (x = mid)."""
-    mid = mask.shape[0] // 2
-    left = mask[:mid].sum()
-    right = mask[mid:].sum()
+def hemisphere_volumes_ml(
+    mask: np.ndarray, voxel_ml: float, affine: np.ndarray | None = None
+) -> dict[str, float]:
+    """Split a brain mask at the mid-sagittal plane.
+
+    The left-right array axis is identified from the image affine (NIfTI
+    world +x is the left-right axis; without an affine we assume axis 0, the
+    legacy behavior). The split plane is the mask centroid along that axis,
+    not the array midpoint, so heads that are off-centre in the field of view
+    still split near the anatomical midline. The split is geometric, not
+    anatomical: it does not correct for head rotation.
+    """
+    if int(mask.sum()) == 0:
+        return {"leftHemisphereVolumeMl": 0.0, "rightHemisphereVolumeMl": 0.0}
+    lr_axis = 0
+    left_is_low_index = True
+    if affine is not None:
+        a = np.asarray(affine, dtype=float)
+        if a.shape == (4, 4):
+            lr_axis = int(np.argmax(np.abs(a[0, :3])))
+            # +x points right in NIfTI world: if increasing the array index
+            # moves toward +x, the low indices are the left hemisphere.
+            left_is_low_index = bool(a[0, lr_axis] > 0)
+    coords = np.where(mask)[lr_axis]
+    centroid = float(coords.mean())
+    idx = np.arange(mask.shape[lr_axis])
+    if left_is_low_index:
+        left_idx = idx[idx < centroid]
+    else:
+        left_idx = idx[idx > centroid]
+    left = int(np.take(mask, left_idx, axis=lr_axis).sum()) if left_idx.size else 0
+    right = int(mask.sum()) - left
     return {
         "leftHemisphereVolumeMl": float(left * voxel_ml),
         "rightHemisphereVolumeMl": float(right * voxel_ml),

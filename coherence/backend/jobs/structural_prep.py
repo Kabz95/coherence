@@ -3,7 +3,8 @@
 Steps:
 1. Load the first converted NIfTI (first volume if 4D).
 2. Percentile-clip intensities (0.5-99.5) and rescale to [0, 1].
-3. Estimate a rough brain mask (Otsu + largest component + hole fill).
+3. Estimate a rough brain mask (background-adaptive threshold + scalp-strip:
+   inferior neck seal, ~10 mm erosion past scalp/skull, ~4 mm regrow).
 4. Write `prepped-t1.nii.gz` and `brain-mask.nii.gz`.
 
 The mask is a rough estimate for volume approximation and QC — not a
@@ -57,10 +58,12 @@ def run(context) -> object:
     norm = (clipped - lo) / max(hi - lo, 1e-9)
     norm = norm.astype(np.float32)
 
-    mask = rough_brain_mask(norm)
-    mask_voxels = int(mask.sum())
     zooms = img.header.get_zooms()[:3]
     voxel_ml = float(np.prod(zooms) / 1000.0)
+    voxel_mm = float(np.prod(zooms) ** (1.0 / 3.0))
+
+    mask = rough_brain_mask(norm, skull_strip=True, affine=img.affine, voxel_mm=voxel_mm)
+    mask_voxels = int(mask.sum())
 
     prepped_path = work / "prepped-t1.nii.gz"
     nib.save(nib.Nifti1Image(norm, img.affine, img.header), str(prepped_path))
