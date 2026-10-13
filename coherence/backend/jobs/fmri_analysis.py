@@ -73,10 +73,12 @@ def run(context) -> object:
         "meanFALFF": round(float(falff_map[mask].mean()), 4),
         "voxels": int(mask.sum()),
         "trSec": tr,
-        "method": "FFT amplitude in 0.01-0.08 Hz (ALFF, mean-standardized); fALFF = band/total amplitude",
+        "method": "FFT amplitude in 0.01-0.08 Hz (ALFF, mean-standardized); fALFF = band/total amplitude; means are over the full analysis mask (brain + background voxels)",
         "limitations": (
             "Descriptive resting-state summaries. No motion correction was performed; "
-            "residual motion inflates ALFF. Not diagnostic."
+            "residual motion inflates ALFF. meanFALFF is a whole-mask average including background "
+            "and reads lower than brain-tissue-only literature values — do not compare directly. "
+            "Not diagnostic."
         ),
     }
     prefix = gcs_prefix(context, "fmri_analysis")
