@@ -1,6 +1,6 @@
 # Coherence pipeline preliminary validation — real-data run
 
-Run at 2026-10-13 01:15 UTC.
+Run at 2026-10-13 02:07 UTC.
 Each modality chain ran offline (FakeContext, local artifacts) on the
 public dataset noted. Sanity items marked REVIEW need a human look;
 they are not assertions. Nothing here is diagnostic.

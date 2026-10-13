@@ -325,7 +325,7 @@ PROVENANCE = {
 
 def build_report(results: dict[str, dict]) -> str:
     lines = [
-        "# Coherence pipeline validation — real-data run",
+        "# Coherence pipeline preliminary validation — real-data run",
         "",
         f"Run at {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M UTC')}.",
         "Each modality chain ran offline (FakeContext, local artifacts) on the",

@@ -153,22 +153,33 @@ def stage_inputs(quick: bool = False) -> dict[str, Path]:
             (INPUTS / (stem + ".json")).write_text(sidecar_src.read_text())
             staged[stem + ".json"] = INPUTS / (stem + ".json")
 
-    # --- dMRI test-retest: ds000114, sub-01 x test/retest ---
+    # --- dMRI test-retest: ds000114, 6 subs x test/retest ---
     if not quick:
-        log("[stage] dMRI ds000114 (1 x 2 DWI) ...")
+        log("[stage] dMRI ds000114 (6 x 2 DWI) ...")
         bval_src = _need("ds000114/dwi.bval")
         bvec_src = _need("ds000114/dwi.bvec")
         import numpy as np
         import nibabel as nib
         n_bval = len(np.loadtxt(bval_src))
-        for ses in ("test", "retest"):
-            stem = f"onv_dwi_ds000114_sub-01_ses-{ses}"
-            dwi = put(_need(f"ds000114/sub-01_ses-{ses}_dwi.nii.gz"), stem + ".nii.gz")
-            n_vol = nib.load(dwi).shape[3]
-            if n_vol != n_bval:
-                log(f"  REVIEW: {stem}: dwi has {n_vol} vols but shared bval has {n_bval}")
-            put(bval_src, stem + ".bval")
-            put(bvec_src, stem + ".bvec")
+        for s in ("01", "02", "03", "04", "05", "06"):
+            for ses in ("test", "retest"):
+                stem = f"onv_dwi_ds000114_sub-{s}_ses-{ses}"
+                dwi = put(_need(f"ds000114/sub-{s}_ses-{ses}_dwi.nii.gz"), stem + ".nii.gz")
+                n_vol = nib.load(dwi).shape[3]
+                if n_vol != n_bval:
+                    log(f"  REVIEW: {stem}: dwi has {n_vol} vols but shared bval has {n_bval}")
+                put(bval_src, stem + ".bval")
+                put(bvec_src, stem + ".bvec")
+
+    # --- sMRI Philips 3T vendor check: ds000174, 4 subs x BL/FU ---
+    # NOTE: ses-BL/ses-FU are baseline and 3-year follow-up -- longitudinal,
+    # NOT test-retest. Used only to check the skull-strip mask fix
+    # generalizes to a Philips 3T Intera (T1 turbo field echo). Descriptive.
+    log("[stage] sMRI ds000174 Philips 3T (4 x 2 T1w, BL/FU) ...")
+    for s in ("101", "103", "104", "108"):
+        for ses in ("BL", "FU"):
+            put(_need(f"ds000174/sub-{s}_ses-{ses}_T1w.nii.gz"),
+                f"onv_smri_ds000174_sub-{s}_ses-{ses}.nii.gz")
 
     # --- fMRI depression longitudinal: ds003007, 3 subs x pre/post ---
     log("[stage] fMRI ds003007 depression (3 x 2 rest bold, TR 2.5 s) ...")
@@ -248,14 +259,25 @@ def build_acquisitions(quick: bool) -> list[Acquisition]:
                 "TR 2.5 s",
                 icc_group="ds000114-fmri"))
     if not quick:
-        for ses in ("test", "retest"):
-            stem = f"onv_dwi_ds000114_sub-01_ses-{ses}"
+        for s in ("01", "02", "03", "04", "05", "06"):
+            for ses in ("test", "retest"):
+                stem = f"onv_dwi_ds000114_sub-{s}_ses-{ses}"
+                acq.append(Acquisition(
+                    "diffusion", "ds000114", f"sub-{s}", f"ses-{ses}",
+                    [stem + ".nii.gz", stem + ".bval", stem + ".bvec"],
+                    "OpenNeuro ds000114 test-retest DWI (shared top-level "
+                    "bval/bvec; volume count verified at staging)",
+                    icc_group="ds000114-dwi"))
+    for s in ("101", "103", "104", "108"):
+        for ses in ("BL", "FU"):
+            n = f"onv_smri_ds000174_sub-{s}_ses-{ses}.nii.gz"
             acq.append(Acquisition(
-                "diffusion", "ds000114", "sub-01", f"ses-{ses}",
-                [stem + ".nii.gz", stem + ".bval", stem + ".bvec"],
-                "OpenNeuro ds000114 test-retest DWI (shared top-level "
-                "bval/bvec; volume count verified at staging)",
-                icc_group="ds000114-dwi"))
+                "structural", "ds000174", f"sub-{s}", f"ses-{ses}", [n],
+                "OpenNeuro ds000174 T1w (Philips 3T Intera, T1 turbo field "
+                "echo); ses-BL/ses-FU are baseline and 3-year follow-up -- "
+                "LONGITUDINAL, not test-retest. DESCRIPTIVE ONLY: checks the "
+                "skull-strip mask fix generalizes to a Philips 3T scanner.",
+                icc_group=None))
     groups = {"01": "depr_no_treatment", "20": "depr_cbt", "22": "depr_nfb"}
     for s, grp in groups.items():
         for ses in ("pre", "post"):
@@ -414,7 +436,7 @@ def check_range(name: str, value, lo: float, hi: float) -> tuple[str, str]:
 
 def build_report(results: list[dict]) -> str:
     lines = [
-        "# Coherence pipeline validation -- OpenNeuro round",
+        "# Coherence pipeline preliminary validation -- OpenNeuro round",
         "",
         f"Run at {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M UTC')}.",
         "Each acquisition ran its full modality chain offline (FakeContext,",
@@ -431,7 +453,10 @@ def build_report(results: list[dict]) -> str:
         "Cite: Maclaren et al., Sci Data 1:140037 (2014).",
         "- **ds000114** test-retest fMRI (motor/language/spatial attention): "
         "3 subjects x test/retest sessions, finger-foot-lips task, TR 2.5 s; "
-        "1 subject x test/retest single-shell DWI (shared bval/bvec).",
+        "6 subjects x test/retest single-shell DWI (shared bval/bvec).",
+        "- **ds000174** T1w, Philips 3T Intera (T1 turbo field echo): 4 "
+        "subjects x baseline/3-year-follow-up. LONGITUDINAL, not test-retest; "
+        "descriptive vendor-generalization check for the skull-strip mask fix.",
         "- **ds003007** resting-state fMRI, mild depression, eyes closed: 3 "
         "subjects (no-treatment / CBT / NFB groups) x pre/post sessions "
         "(2-month interval), TR 2.5 s. Descriptive only.",
@@ -533,6 +558,28 @@ def build_report(results: list[dict]) -> str:
             f"{res['acq'].repeat}: tSNR={m.get('medianTSNR')}, "
             f"ALFF={m.get('meanALFF')}, fALFF={m.get('meanFALFF')}, "
             f"DVARS spikes={m.get('dvarsSpikeVolumes')}")
+    lines += [""]
+
+    # ds000174 Philips 3T vendor check -- descriptive only
+    lines += ["## ds000174 Philips 3T vendor check -- descriptive only", "",
+              "Philips 3T Intera T1w (T1 turbo field echo). ses-BL/ses-FU are "
+              "baseline and 3-year follow-up: LONGITUDINAL, not test-retest, "
+              "so no ICC is computed. Purpose: check the skull-strip mask fix "
+              "generalizes beyond the GE 3T of ds000239 -- TICV in the "
+              "800-2200 mL sanity range, left/right split near 1:1, no REVIEW "
+              "flags. No clinical claim.", ""]
+    for res in results:
+        if res["acq"].dataset != "ds000174":
+            continue
+        m = res["metrics"]
+        l = m.get("leftHemisphereVolumeMl")
+        r = m.get("rightHemisphereVolumeMl")
+        ratio = (f"{float(l)/float(r):.2f}"
+                 if l and r and float(r) else "n/a")
+        lines.append(
+            f"- {res['acq'].subject} {res['acq'].repeat}: "
+            f"TICV={m.get('totalIntracranialVolumeMl')} mL, "
+            f"L/R={ratio}")
     lines += [""]
 
     # sanity checks per acquisition

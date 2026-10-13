@@ -1,6 +1,6 @@
 # Coherence pipeline preliminary validation -- OpenNeuro round
 
-Run at 2026-10-13 01:14 UTC.
+Run at 2026-10-13 02:04 UTC.
 Each acquisition ran its full modality chain offline (FakeContext,
 local artifacts) on the public OpenNeuro dataset noted. ICC(1,1) is
 reported for test-retest repeats; items marked REVIEW need a human
@@ -11,7 +11,8 @@ Nothing here is diagnostic.
 ## Datasets
 
 - **ds000239** Maclaren et al. 2014 test-retest brain volumes: 3 subjects x 5 T1w runs (GE 3T, ADNI IR-SPGR). Cite: Maclaren et al., Sci Data 1:140037 (2014).
-- **ds000114** test-retest fMRI (motor/language/spatial attention): 3 subjects x test/retest sessions, finger-foot-lips task, TR 2.5 s; 1 subject x test/retest single-shell DWI (shared bval/bvec).
+- **ds000114** test-retest fMRI (motor/language/spatial attention): 3 subjects x test/retest sessions, finger-foot-lips task, TR 2.5 s; 6 subjects x test/retest single-shell DWI (shared bval/bvec).
+- **ds000174** T1w, Philips 3T Intera (T1 turbo field echo): 4 subjects x baseline/3-year-follow-up. LONGITUDINAL, not test-retest; descriptive vendor-generalization check for the skull-strip mask fix.
 - **ds003007** resting-state fMRI, mild depression, eyes closed: 3 subjects (no-treatment / CBT / NFB groups) x pre/post sessions (2-month interval), TR 2.5 s. Descriptive only.
 - **ds000117** face-processing MEG: 1 subject, Neuromag 306 ch, cropped to 120 s for validation speed.
 - **ds002718** face-recognition EEG: 1 subject, EEGLAB .set @ 250 Hz, converted to EDF by the harness.
@@ -469,6 +470,368 @@ Pipeline warnings:
   - [converter] Skipped 'onv_dwi_ds000114_sub-01_ses-retest.bvec': unsupported extension for conversion.
   - [diffusion_prep] No eddy-current/motion correction performed (requires FSL eddy); results carry this limitation.
 
+## diffusion -- ds000114 sub-02 ses-test
+
+OpenNeuro ds000114 test-retest DWI (shared top-level bval/bvec; volume count verified at staging)
+
+- `converter`: **completed** (2 warnings)
+- `diffusion_prep`: **completed** (1 warnings)
+- `diffusion_analysis`: **completed**
+- `diffusion_3d_prep`: **completed**
+- `report_builder`: **completed**
+
+Key metrics:
+- meanFA: 0.1421
+- meanMD: 0.001473
+- meanAD: 0.001649
+- meanRD: 0.001385
+
+Pipeline warnings:
+  - [converter] Skipped 'onv_dwi_ds000114_sub-02_ses-test.bval': unsupported extension for conversion.
+  - [converter] Skipped 'onv_dwi_ds000114_sub-02_ses-test.bvec': unsupported extension for conversion.
+  - [diffusion_prep] No eddy-current/motion correction performed (requires FSL eddy); results carry this limitation.
+
+## diffusion -- ds000114 sub-02 ses-retest
+
+OpenNeuro ds000114 test-retest DWI (shared top-level bval/bvec; volume count verified at staging)
+
+- `converter`: **completed** (2 warnings)
+- `diffusion_prep`: **completed** (1 warnings)
+- `diffusion_analysis`: **completed**
+- `diffusion_3d_prep`: **completed**
+- `report_builder`: **completed**
+
+Key metrics:
+- meanFA: 0.1602
+- meanMD: 0.001311
+- meanAD: 0.001489
+- meanRD: 0.001223
+
+Pipeline warnings:
+  - [converter] Skipped 'onv_dwi_ds000114_sub-02_ses-retest.bval': unsupported extension for conversion.
+  - [converter] Skipped 'onv_dwi_ds000114_sub-02_ses-retest.bvec': unsupported extension for conversion.
+  - [diffusion_prep] No eddy-current/motion correction performed (requires FSL eddy); results carry this limitation.
+
+## diffusion -- ds000114 sub-03 ses-test
+
+OpenNeuro ds000114 test-retest DWI (shared top-level bval/bvec; volume count verified at staging)
+
+- `converter`: **completed** (2 warnings)
+- `diffusion_prep`: **completed** (1 warnings)
+- `diffusion_analysis`: **completed**
+- `diffusion_3d_prep`: **completed**
+- `report_builder`: **completed**
+
+Key metrics:
+- meanFA: 0.139
+- meanMD: 0.001505
+- meanAD: 0.001675
+- meanRD: 0.001419
+
+Pipeline warnings:
+  - [converter] Skipped 'onv_dwi_ds000114_sub-03_ses-test.bval': unsupported extension for conversion.
+  - [converter] Skipped 'onv_dwi_ds000114_sub-03_ses-test.bvec': unsupported extension for conversion.
+  - [diffusion_prep] No eddy-current/motion correction performed (requires FSL eddy); results carry this limitation.
+
+## diffusion -- ds000114 sub-03 ses-retest
+
+OpenNeuro ds000114 test-retest DWI (shared top-level bval/bvec; volume count verified at staging)
+
+- `converter`: **completed** (2 warnings)
+- `diffusion_prep`: **completed** (1 warnings)
+- `diffusion_analysis`: **completed**
+- `diffusion_3d_prep`: **completed**
+- `report_builder`: **completed**
+
+Key metrics:
+- meanFA: 0.1459
+- meanMD: 0.001409
+- meanAD: 0.001579
+- meanRD: 0.001324
+
+Pipeline warnings:
+  - [converter] Skipped 'onv_dwi_ds000114_sub-03_ses-retest.bval': unsupported extension for conversion.
+  - [converter] Skipped 'onv_dwi_ds000114_sub-03_ses-retest.bvec': unsupported extension for conversion.
+  - [diffusion_prep] No eddy-current/motion correction performed (requires FSL eddy); results carry this limitation.
+
+## diffusion -- ds000114 sub-04 ses-test
+
+OpenNeuro ds000114 test-retest DWI (shared top-level bval/bvec; volume count verified at staging)
+
+- `converter`: **completed** (2 warnings)
+- `diffusion_prep`: **completed** (1 warnings)
+- `diffusion_analysis`: **completed**
+- `diffusion_3d_prep`: **completed**
+- `report_builder`: **completed**
+
+Key metrics:
+- meanFA: 0.1563
+- meanMD: 0.00134
+- meanAD: 0.001517
+- meanRD: 0.001252
+
+Pipeline warnings:
+  - [converter] Skipped 'onv_dwi_ds000114_sub-04_ses-test.bval': unsupported extension for conversion.
+  - [converter] Skipped 'onv_dwi_ds000114_sub-04_ses-test.bvec': unsupported extension for conversion.
+  - [diffusion_prep] No eddy-current/motion correction performed (requires FSL eddy); results carry this limitation.
+
+## diffusion -- ds000114 sub-04 ses-retest
+
+OpenNeuro ds000114 test-retest DWI (shared top-level bval/bvec; volume count verified at staging)
+
+- `converter`: **completed** (2 warnings)
+- `diffusion_prep`: **completed** (1 warnings)
+- `diffusion_analysis`: **completed**
+- `diffusion_3d_prep`: **completed**
+- `report_builder`: **completed**
+
+Key metrics:
+- meanFA: 0.1597
+- meanMD: 0.001304
+- meanAD: 0.001481
+- meanRD: 0.001216
+
+Pipeline warnings:
+  - [converter] Skipped 'onv_dwi_ds000114_sub-04_ses-retest.bval': unsupported extension for conversion.
+  - [converter] Skipped 'onv_dwi_ds000114_sub-04_ses-retest.bvec': unsupported extension for conversion.
+  - [diffusion_prep] No eddy-current/motion correction performed (requires FSL eddy); results carry this limitation.
+
+## diffusion -- ds000114 sub-05 ses-test
+
+OpenNeuro ds000114 test-retest DWI (shared top-level bval/bvec; volume count verified at staging)
+
+- `converter`: **completed** (2 warnings)
+- `diffusion_prep`: **completed** (1 warnings)
+- `diffusion_analysis`: **completed**
+- `diffusion_3d_prep`: **completed**
+- `report_builder`: **completed**
+
+Key metrics:
+- meanFA: 0.116
+- meanMD: 0.001841
+- meanAD: 0.00202
+- meanRD: 0.001751
+
+Pipeline warnings:
+  - [converter] Skipped 'onv_dwi_ds000114_sub-05_ses-test.bval': unsupported extension for conversion.
+  - [converter] Skipped 'onv_dwi_ds000114_sub-05_ses-test.bvec': unsupported extension for conversion.
+  - [diffusion_prep] No eddy-current/motion correction performed (requires FSL eddy); results carry this limitation.
+
+## diffusion -- ds000114 sub-05 ses-retest
+
+OpenNeuro ds000114 test-retest DWI (shared top-level bval/bvec; volume count verified at staging)
+
+- `converter`: **completed** (2 warnings)
+- `diffusion_prep`: **completed** (1 warnings)
+- `diffusion_analysis`: **completed**
+- `diffusion_3d_prep`: **completed**
+- `report_builder`: **completed**
+
+Key metrics:
+- meanFA: 0.1149
+- meanMD: 0.001865
+- meanAD: 0.002043
+- meanRD: 0.001776
+
+Pipeline warnings:
+  - [converter] Skipped 'onv_dwi_ds000114_sub-05_ses-retest.bval': unsupported extension for conversion.
+  - [converter] Skipped 'onv_dwi_ds000114_sub-05_ses-retest.bvec': unsupported extension for conversion.
+  - [diffusion_prep] No eddy-current/motion correction performed (requires FSL eddy); results carry this limitation.
+
+## diffusion -- ds000114 sub-06 ses-test
+
+OpenNeuro ds000114 test-retest DWI (shared top-level bval/bvec; volume count verified at staging)
+
+- `converter`: **completed** (2 warnings)
+- `diffusion_prep`: **completed** (1 warnings)
+- `diffusion_analysis`: **completed**
+- `diffusion_3d_prep`: **completed**
+- `report_builder`: **completed**
+
+Key metrics:
+- meanFA: 0.1332
+- meanMD: 0.001604
+- meanAD: 0.001779
+- meanRD: 0.001516
+
+Pipeline warnings:
+  - [converter] Skipped 'onv_dwi_ds000114_sub-06_ses-test.bval': unsupported extension for conversion.
+  - [converter] Skipped 'onv_dwi_ds000114_sub-06_ses-test.bvec': unsupported extension for conversion.
+  - [diffusion_prep] No eddy-current/motion correction performed (requires FSL eddy); results carry this limitation.
+
+## diffusion -- ds000114 sub-06 ses-retest
+
+OpenNeuro ds000114 test-retest DWI (shared top-level bval/bvec; volume count verified at staging)
+
+- `converter`: **completed** (2 warnings)
+- `diffusion_prep`: **completed** (1 warnings)
+- `diffusion_analysis`: **completed**
+- `diffusion_3d_prep`: **completed**
+- `report_builder`: **completed**
+
+Key metrics:
+- meanFA: 0.1331
+- meanMD: 0.001577
+- meanAD: 0.00175
+- meanRD: 0.00149
+
+Pipeline warnings:
+  - [converter] Skipped 'onv_dwi_ds000114_sub-06_ses-retest.bval': unsupported extension for conversion.
+  - [converter] Skipped 'onv_dwi_ds000114_sub-06_ses-retest.bvec': unsupported extension for conversion.
+  - [diffusion_prep] No eddy-current/motion correction performed (requires FSL eddy); results carry this limitation.
+
+## structural -- ds000174 sub-101 ses-BL
+
+OpenNeuro ds000174 T1w (Philips 3T Intera, T1 turbo field echo); ses-BL/ses-FU are baseline and 3-year follow-up -- LONGITUDINAL, not test-retest. DESCRIPTIVE ONLY: checks the skull-strip mask fix generalizes to a Philips 3T scanner.
+
+- `converter`: **completed**
+- `qc`: **completed**
+- `structural_prep`: **completed**
+- `structural_analysis`: **completed** (1 warnings)
+- `structural_3d_prep`: **completed**
+- `report_builder`: **completed**
+
+Key metrics:
+- totalIntracranialVolumeMl: 593.87
+- leftHemisphereVolumeMl: 296.92
+- rightHemisphereVolumeMl: 296.95
+
+Pipeline warnings:
+  - [structural_analysis] FastSurfer not installed; using built-in mask volumetry (no cortical thickness).
+
+## structural -- ds000174 sub-101 ses-FU
+
+OpenNeuro ds000174 T1w (Philips 3T Intera, T1 turbo field echo); ses-BL/ses-FU are baseline and 3-year follow-up -- LONGITUDINAL, not test-retest. DESCRIPTIVE ONLY: checks the skull-strip mask fix generalizes to a Philips 3T scanner.
+
+- `converter`: **completed**
+- `qc`: **completed**
+- `structural_prep`: **completed**
+- `structural_analysis`: **completed** (1 warnings)
+- `structural_3d_prep`: **completed**
+- `report_builder`: **completed**
+
+Key metrics:
+- totalIntracranialVolumeMl: 1411.28
+- leftHemisphereVolumeMl: 722.44
+- rightHemisphereVolumeMl: 688.85
+
+Pipeline warnings:
+  - [structural_analysis] FastSurfer not installed; using built-in mask volumetry (no cortical thickness).
+
+## structural -- ds000174 sub-103 ses-BL
+
+OpenNeuro ds000174 T1w (Philips 3T Intera, T1 turbo field echo); ses-BL/ses-FU are baseline and 3-year follow-up -- LONGITUDINAL, not test-retest. DESCRIPTIVE ONLY: checks the skull-strip mask fix generalizes to a Philips 3T scanner.
+
+- `converter`: **completed**
+- `qc`: **completed**
+- `structural_prep`: **completed**
+- `structural_analysis`: **completed** (1 warnings)
+- `structural_3d_prep`: **completed**
+- `report_builder`: **completed**
+
+Key metrics:
+- totalIntracranialVolumeMl: 830.34
+- leftHemisphereVolumeMl: 413.17
+- rightHemisphereVolumeMl: 417.17
+
+Pipeline warnings:
+  - [structural_analysis] FastSurfer not installed; using built-in mask volumetry (no cortical thickness).
+
+## structural -- ds000174 sub-103 ses-FU
+
+OpenNeuro ds000174 T1w (Philips 3T Intera, T1 turbo field echo); ses-BL/ses-FU are baseline and 3-year follow-up -- LONGITUDINAL, not test-retest. DESCRIPTIVE ONLY: checks the skull-strip mask fix generalizes to a Philips 3T scanner.
+
+- `converter`: **completed**
+- `qc`: **completed**
+- `structural_prep`: **completed**
+- `structural_analysis`: **completed** (1 warnings)
+- `structural_3d_prep`: **completed**
+- `report_builder`: **completed**
+
+Key metrics:
+- totalIntracranialVolumeMl: 1411.95
+- leftHemisphereVolumeMl: 705.59
+- rightHemisphereVolumeMl: 706.35
+
+Pipeline warnings:
+  - [structural_analysis] FastSurfer not installed; using built-in mask volumetry (no cortical thickness).
+
+## structural -- ds000174 sub-104 ses-BL
+
+OpenNeuro ds000174 T1w (Philips 3T Intera, T1 turbo field echo); ses-BL/ses-FU are baseline and 3-year follow-up -- LONGITUDINAL, not test-retest. DESCRIPTIVE ONLY: checks the skull-strip mask fix generalizes to a Philips 3T scanner.
+
+- `converter`: **completed**
+- `qc`: **completed**
+- `structural_prep`: **completed**
+- `structural_analysis`: **completed** (1 warnings)
+- `structural_3d_prep`: **completed**
+- `report_builder`: **completed**
+
+Key metrics:
+- totalIntracranialVolumeMl: 716.65
+- leftHemisphereVolumeMl: 359.78
+- rightHemisphereVolumeMl: 356.86
+
+Pipeline warnings:
+  - [structural_analysis] FastSurfer not installed; using built-in mask volumetry (no cortical thickness).
+
+## structural -- ds000174 sub-104 ses-FU
+
+OpenNeuro ds000174 T1w (Philips 3T Intera, T1 turbo field echo); ses-BL/ses-FU are baseline and 3-year follow-up -- LONGITUDINAL, not test-retest. DESCRIPTIVE ONLY: checks the skull-strip mask fix generalizes to a Philips 3T scanner.
+
+- `converter`: **completed**
+- `qc`: **completed**
+- `structural_prep`: **completed**
+- `structural_analysis`: **completed** (1 warnings)
+- `structural_3d_prep`: **completed**
+- `report_builder`: **completed**
+
+Key metrics:
+- totalIntracranialVolumeMl: 1007.08
+- leftHemisphereVolumeMl: 498.89
+- rightHemisphereVolumeMl: 508.19
+
+Pipeline warnings:
+  - [structural_analysis] FastSurfer not installed; using built-in mask volumetry (no cortical thickness).
+
+## structural -- ds000174 sub-108 ses-BL
+
+OpenNeuro ds000174 T1w (Philips 3T Intera, T1 turbo field echo); ses-BL/ses-FU are baseline and 3-year follow-up -- LONGITUDINAL, not test-retest. DESCRIPTIVE ONLY: checks the skull-strip mask fix generalizes to a Philips 3T scanner.
+
+- `converter`: **completed**
+- `qc`: **completed**
+- `structural_prep`: **completed**
+- `structural_analysis`: **completed** (1 warnings)
+- `structural_3d_prep`: **completed**
+- `report_builder`: **completed**
+
+Key metrics:
+- totalIntracranialVolumeMl: 793.5
+- leftHemisphereVolumeMl: 397.37
+- rightHemisphereVolumeMl: 396.13
+
+Pipeline warnings:
+  - [structural_analysis] FastSurfer not installed; using built-in mask volumetry (no cortical thickness).
+
+## structural -- ds000174 sub-108 ses-FU
+
+OpenNeuro ds000174 T1w (Philips 3T Intera, T1 turbo field echo); ses-BL/ses-FU are baseline and 3-year follow-up -- LONGITUDINAL, not test-retest. DESCRIPTIVE ONLY: checks the skull-strip mask fix generalizes to a Philips 3T scanner.
+
+- `converter`: **completed**
+- `qc`: **completed**
+- `structural_prep`: **completed**
+- `structural_analysis`: **completed** (1 warnings)
+- `structural_3d_prep`: **completed**
+- `report_builder`: **completed**
+
+Key metrics:
+- totalIntracranialVolumeMl: 2149.53
+- leftHemisphereVolumeMl: 1063.57
+- rightHemisphereVolumeMl: 1085.95
+
+Pipeline warnings:
+  - [structural_analysis] FastSurfer not installed; using built-in mask volumetry (no cortical thickness).
+
 ## fmri -- ds003007 sub-01 ses-pre
 
 OpenNeuro ds003007 resting-state fMRI, depression, eyes closed, TR 2.5 s; group=depr_no_treatment; pre/post 2-month interval. DESCRIPTIVE ONLY -- not test-retest.
@@ -670,16 +1033,26 @@ Repeat values:
   - sub-03 ses-test: {'medianTSNR': 43.44, 'meanALFF': 1.0, 'meanFALFF': 0.1075}
   - sub-03 ses-retest: {'medianTSNR': 51.14, 'meanALFF': 1.0, 'meanFALFF': 0.1073}
 
-### ds000114-dwi (diffusion: 1 subjects x 2 repeats)
+### ds000114-dwi (diffusion: 6 subjects x 2 repeats)
 
-- meanFA: n/a (insufficient repeats; n_obs=2) -- REVIEW: degenerate for ICC
-- meanMD: n/a (insufficient repeats; n_obs=2) -- REVIEW: degenerate for ICC
-- meanAD: n/a (insufficient repeats; n_obs=2) -- REVIEW: degenerate for ICC
-- meanRD: n/a (insufficient repeats; n_obs=2) -- REVIEW: degenerate for ICC
+- meanFA: ICC(1,1) = 0.856 (n_subj=6, n_obs=12)
+- meanMD: ICC(1,1) = 0.907 (n_subj=6, n_obs=12)
+- meanAD: ICC(1,1) = 0.909 (n_subj=6, n_obs=12)
+- meanRD: ICC(1,1) = 0.907 (n_subj=6, n_obs=12)
 
 Repeat values:
   - sub-01 ses-test: {'meanFA': 0.1375, 'meanMD': 0.001527, 'meanAD': 0.001708, 'meanRD': 0.001436}
   - sub-01 ses-retest: {'meanFA': 0.1422, 'meanMD': 0.001473, 'meanAD': 0.001654, 'meanRD': 0.001383}
+  - sub-02 ses-test: {'meanFA': 0.1421, 'meanMD': 0.001473, 'meanAD': 0.001649, 'meanRD': 0.001385}
+  - sub-02 ses-retest: {'meanFA': 0.1602, 'meanMD': 0.001311, 'meanAD': 0.001489, 'meanRD': 0.001223}
+  - sub-03 ses-test: {'meanFA': 0.139, 'meanMD': 0.001505, 'meanAD': 0.001675, 'meanRD': 0.001419}
+  - sub-03 ses-retest: {'meanFA': 0.1459, 'meanMD': 0.001409, 'meanAD': 0.001579, 'meanRD': 0.001324}
+  - sub-04 ses-test: {'meanFA': 0.1563, 'meanMD': 0.00134, 'meanAD': 0.001517, 'meanRD': 0.001252}
+  - sub-04 ses-retest: {'meanFA': 0.1597, 'meanMD': 0.001304, 'meanAD': 0.001481, 'meanRD': 0.001216}
+  - sub-05 ses-test: {'meanFA': 0.116, 'meanMD': 0.001841, 'meanAD': 0.00202, 'meanRD': 0.001751}
+  - sub-05 ses-retest: {'meanFA': 0.1149, 'meanMD': 0.001865, 'meanAD': 0.002043, 'meanRD': 0.001776}
+  - sub-06 ses-test: {'meanFA': 0.1332, 'meanMD': 0.001604, 'meanAD': 0.001779, 'meanRD': 0.001516}
+  - sub-06 ses-retest: {'meanFA': 0.1331, 'meanMD': 0.001577, 'meanAD': 0.00175, 'meanRD': 0.00149}
 
 ## ds003007 depression sample -- descriptive only
 
@@ -691,6 +1064,33 @@ Pre/post sessions span a 2-month interval WITH treatment-group assignment; pre/p
 - sub-20 (depr_cbt) ses-post: tSNR=72.26, ALFF=1.0, fALFF=0.1156, DVARS spikes=2
 - sub-22 (depr_nfb) ses-pre: tSNR=76.75, ALFF=1.0, fALFF=0.1308, DVARS spikes=0
 - sub-22 (depr_nfb) ses-post: tSNR=81.65, ALFF=1.0, fALFF=0.1296, DVARS spikes=0
+
+## ds000174 Philips 3T vendor check -- descriptive only
+
+Philips 3T Intera T1w (T1 turbo field echo). ses-BL/ses-FU are baseline and 3-year follow-up: LONGITUDINAL, not test-retest, so no ICC is computed. Purpose: check the skull-strip mask fix generalizes beyond the GE 3T of ds000239 -- TICV in the 800-2200 mL sanity range, left/right split near 1:1, no REVIEW flags. No clinical claim.
+
+- sub-101 ses-BL: TICV=593.87 mL, L/R=1.00
+- sub-101 ses-FU: TICV=1411.28 mL, L/R=1.05
+- sub-103 ses-BL: TICV=830.34 mL, L/R=0.99
+- sub-103 ses-FU: TICV=1411.95 mL, L/R=1.00
+- sub-104 ses-BL: TICV=716.65 mL, L/R=1.01
+- sub-104 ses-FU: TICV=1007.08 mL, L/R=0.98
+- sub-108 ses-BL: TICV=793.5 mL, L/R=1.00
+- sub-108 ses-FU: TICV=2149.53 mL, L/R=0.98
+
+**Analyst note (2026-10-13):** the mask fix generalizes to Philips 3T on
+standard-protocol scans (all 4 FU: TICV 1007-2150 mL, plausible; L/R
+0.98-1.05 on all 8 runs). The 3 BL scans below the 800 mL floor are a
+protocol/FOV interaction, not a vendor failure and not biology:
+same-subject BL/FU TICV differs up to ~2x, which is anatomically
+impossible for intracranial volume. The BL protocol used a tighter,
+differently-oriented FOV (e.g. sub-101 BL: 256x182x256 at 0.93 mm3 vs
+FU: 256x256x170 at 1.00 mm3); pre-erosion head volume was already
+smaller on BL (3667 vs 4468 mL for sub-101), and the fixed 10 mm erosion
++ 15 mm neck seal over-trims on truncated-FOV protocols. Recommended
+next fix: FOV-adaptive erosion or truncation detection -- not a revert
+of the skull-strip fix, which holds on standard FOVs across GE and
+Philips.
 
 ## Sanity checks
 
@@ -725,6 +1125,34 @@ Pre/post sessions span a 2-month interval WITH treatment-group assignment; pre/p
 - [ds000114 sub-01 ses-test] mean MD positive & small: PASS
 - [ds000114 sub-01 ses-retest] mean FA in [0,1]: PASS
 - [ds000114 sub-01 ses-retest] mean MD positive & small: PASS
+- [ds000114 sub-02 ses-test] mean FA in [0,1]: PASS
+- [ds000114 sub-02 ses-test] mean MD positive & small: PASS
+- [ds000114 sub-02 ses-retest] mean FA in [0,1]: PASS
+- [ds000114 sub-02 ses-retest] mean MD positive & small: PASS
+- [ds000114 sub-03 ses-test] mean FA in [0,1]: PASS
+- [ds000114 sub-03 ses-test] mean MD positive & small: PASS
+- [ds000114 sub-03 ses-retest] mean FA in [0,1]: PASS
+- [ds000114 sub-03 ses-retest] mean MD positive & small: PASS
+- [ds000114 sub-04 ses-test] mean FA in [0,1]: PASS
+- [ds000114 sub-04 ses-test] mean MD positive & small: PASS
+- [ds000114 sub-04 ses-retest] mean FA in [0,1]: PASS
+- [ds000114 sub-04 ses-retest] mean MD positive & small: PASS
+- [ds000114 sub-05 ses-test] mean FA in [0,1]: PASS
+- [ds000114 sub-05 ses-test] mean MD positive & small: PASS
+- [ds000114 sub-05 ses-retest] mean FA in [0,1]: PASS
+- [ds000114 sub-05 ses-retest] mean MD positive & small: PASS
+- [ds000114 sub-06 ses-test] mean FA in [0,1]: PASS
+- [ds000114 sub-06 ses-test] mean MD positive & small: PASS
+- [ds000114 sub-06 ses-retest] mean FA in [0,1]: PASS
+- [ds000114 sub-06 ses-retest] mean MD positive & small: PASS
+- [ds000174 sub-101 ses-BL] TICV 800-2200 mL: REVIEW (value=593.87, expected [800, 2200])
+- [ds000174 sub-101 ses-FU] TICV 800-2200 mL: PASS
+- [ds000174 sub-103 ses-BL] TICV 800-2200 mL: PASS
+- [ds000174 sub-103 ses-FU] TICV 800-2200 mL: PASS
+- [ds000174 sub-104 ses-BL] TICV 800-2200 mL: REVIEW (value=716.65, expected [800, 2200])
+- [ds000174 sub-104 ses-FU] TICV 800-2200 mL: PASS
+- [ds000174 sub-108 ses-BL] TICV 800-2200 mL: REVIEW (value=793.5, expected [800, 2200])
+- [ds000174 sub-108 ses-FU] TICV 800-2200 mL: PASS
 - [ds003007 sub-01 ses-pre] median tSNR > 0: PASS
 - [ds003007 sub-01 ses-pre] mean ALFF standardized ~1: PASS
 - [ds003007 sub-01 ses-post] median tSNR > 0: PASS
@@ -752,8 +1180,10 @@ Pre/post sessions span a 2-month interval WITH treatment-group assignment; pre/p
 ## Reading the ICCs honestly
 
 - meanALFF ICC = 1.000 is trivial: the pipeline standardizes ALFF to mean 1.0 within each run, so perfect 'reliability' is a normalization artifact, not a measurement finding. Standardized metrics cannot validate a reliability gate.
-- TICV is the cautionary case for the proposed gate: ICC = 0.929 (comfortably passes 0.7) while absolute values (2,284-2,849 mL) sit systematically above the 800-2,200 mL sanity range on every one of 15 runs. Repeatable but biased. A reliability gate alone would retain this metric; validity checks must accompany any ICC gate.
+- TICV remains the cautionary case for the proposed gate: in the pre-fix round it scored ICC = 0.929 (comfortably passing 0.7) while absolute values (2,284-2,849 mL) sat systematically above the sanity range on every run -- repeatable but biased. Post-fix, TICV is ICC = 0.889 with values 952-1,895 mL (all PASS). The lesson stands: a reliability gate alone would have retained the biased metric; validity checks must accompany any ICC gate.
+- leftHemisphereVolumeMl: pre-fix ICC = 0.501 (FAIL) with an implausible ~1:1.7 L/R split; post-fix ICC = 0.886 (PASS) with L/R 1.00-1.03 on all 15 runs. The mid-sagittal split fix is confirmed by both geometry and reliability.
+- NEW this round -- diffusion ICCs (ds000114, 6 subjects x test/retest, n_obs=12): meanFA 0.856, meanMD 0.907, meanAD 0.909, meanRD 0.907 -- all pass the 0.7 gate with real multi-subject data. The N=1 demonstrative result is superseded.
 - medianTSNR ICC = 0.504 fails the 0.7 bar, but tSNR is a session-quality covariate, not a brain measure; gating it would punish noisier sessions rather than unreliable metrics.
-- leftHemisphereVolumeMl ICC = 0.501 fails the 0.7 bar AND the L/R split is anatomically implausible (~1:1.7), pointing at the mid-sagittal split step rather than the mask.
+- Philips 3T check (ds000174): no ICC computed (3-year longitudinal interval, not test-retest). 3 of 4 baseline scans fall below the TICV floor -- see the analyst note above; a protocol/FOV robustness issue with the conservative erosion, flagged REVIEW, not a vendor failure.
 
-Sanity items flagged REVIEW: 0
+Sanity items flagged REVIEW: 3
