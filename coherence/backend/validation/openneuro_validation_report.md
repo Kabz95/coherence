@@ -1,4 +1,4 @@
-# Coherence pipeline validation -- OpenNeuro round
+# Coherence pipeline preliminary validation -- OpenNeuro round
 
 Run at 2026-10-13 01:14 UTC.
 Each acquisition ran its full modality chain offline (FakeContext,

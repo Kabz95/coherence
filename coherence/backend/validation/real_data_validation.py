@@ -1,4 +1,4 @@
-"""Real-data validation for the Coherence backend pipelines.
+"""Preliminary real-data validation for the Coherence backend pipelines.
 
 Downloads small public datasets (cached under ~/coherence-validation-data so
 re-runs are free) and runs each modality's full job chain with the same

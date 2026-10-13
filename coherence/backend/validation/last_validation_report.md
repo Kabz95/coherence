@@ -1,4 +1,4 @@
-# Coherence pipeline validation — real-data run
+# Coherence pipeline preliminary validation — real-data run
 
 Run at 2026-10-13 01:15 UTC.
 Each modality chain ran offline (FakeContext, local artifacts) on the

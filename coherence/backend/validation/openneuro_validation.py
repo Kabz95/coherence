@@ -1,4 +1,4 @@
-"""OpenNeuro validation round for the Coherence backend pipelines.
+"""Preliminary OpenNeuro validation round for the Coherence backend pipelines.
 
 Extends the real-data validation pack (real_data_validation.py, untouched)
 with public OpenNeuro datasets, chosen for:
