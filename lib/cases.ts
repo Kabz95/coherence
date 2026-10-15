@@ -32,15 +32,31 @@ export async function createPatientCase(input: Omit<PatientCase, "id" | "created
 
   const { addDoc, collection, serverTimestamp } = await import("firebase/firestore/lite");
   const { db } = await getFirebaseServices();
-  const ref = await addDoc(collection(db, "patientCases"), {
-    ...input,
+  // Firestore rejects `undefined` field values, so only include optional
+  // fields that are actually defined. Never spread `input` straight into
+  // addDoc: an empty Notes field arrives as `notes: undefined` and fails
+  // the whole write with "Unsupported field value: undefined".
+  const payload: Record<string, unknown> = {
+    displayName: input.displayName,
     createdAt: now,
     updatedAt: now,
     serverCreatedAt: serverTimestamp(),
     serverUpdatedAt: serverTimestamp()
-  });
+  };
+  if (input.birthYear !== undefined) payload.birthYear = input.birthYear;
+  if (input.sex !== undefined) payload.sex = input.sex;
+  if (input.notes !== undefined) payload.notes = input.notes;
+  const ref = await addDoc(collection(db, "patientCases"), payload);
 
-  return { ...input, id: ref.id, createdAt: now, updatedAt: now };
+  return {
+    displayName: input.displayName,
+    ...(input.birthYear !== undefined ? { birthYear: input.birthYear } : {}),
+    ...(input.sex !== undefined ? { sex: input.sex } : {}),
+    ...(input.notes !== undefined ? { notes: input.notes } : {}),
+    id: ref.id,
+    createdAt: now,
+    updatedAt: now
+  };
 }
 
 export async function listPatientCases(): Promise<PatientCase[]> {

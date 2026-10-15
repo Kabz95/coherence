@@ -6,6 +6,17 @@ import { createPatientCase } from "@/lib/cases";
 import { useAuth } from "./auth-provider";
 import { ProgressBar } from "./progress-bar";
 
+/** Fixed option set for the Sex dropdown. Stored verbatim in Firestore. */
+const SEX_OPTIONS = ["Female", "Male", "Other", "Prefer not to say"] as const;
+
+/** Year-of-birth dropdown floor; top is the current year, newest first. */
+const BIRTH_YEAR_MIN = 1900;
+const CURRENT_YEAR = new Date().getFullYear();
+const BIRTH_YEARS: number[] = Array.from(
+  { length: CURRENT_YEAR - BIRTH_YEAR_MIN + 1 },
+  (_, index) => CURRENT_YEAR - index
+);
+
 export function CreateCaseForm() {
   const router = useRouter();
   const { identityEmail } = useAuth();
@@ -30,8 +41,21 @@ export function CreateCaseForm() {
       return;
     }
 
-    const parsedBirthYear = birthYear.trim() ? Number(birthYear) : undefined;
-    if (parsedBirthYear && (Number.isNaN(parsedBirthYear) || parsedBirthYear < 1900 || parsedBirthYear > new Date().getFullYear())) {
+    // Dropdowns: the "Select…" placeholder has value "" and must not submit.
+    // (The selects are also `required`, so browsers block this natively;
+    // these checks are the backstop for programmatic submits.)
+    if (!sex) {
+      setMessage("Select sex.");
+      return;
+    }
+
+    if (!birthYear) {
+      setMessage("Select a birth year.");
+      return;
+    }
+
+    const parsedBirthYear = Number(birthYear);
+    if (Number.isNaN(parsedBirthYear) || parsedBirthYear < BIRTH_YEAR_MIN || parsedBirthYear > CURRENT_YEAR) {
       setMessage("Birth year must be a valid year.");
       return;
     }
@@ -42,7 +66,7 @@ export function CreateCaseForm() {
       const patientCase = await createPatientCase({
         displayName: displayName.trim(),
         birthYear: parsedBirthYear,
-        sex: sex.trim() || undefined,
+        sex,
         notes: notes.trim() || undefined
       });
       router.refresh();
@@ -64,19 +88,30 @@ export function CreateCaseForm() {
         required
       />
       <div className="grid gap-4 sm:grid-cols-2">
-        <input
+        <select
           value={birthYear}
           onChange={(event) => setBirthYear(event.target.value)}
-          inputMode="numeric"
+          required
+          aria-label="Birth year"
           className="rounded-md border border-white/10 bg-midnight px-3 py-2 text-sm text-white"
-          placeholder="Birth year optional"
-        />
-        <input
+        >
+          <option value="" disabled>Select birth year…</option>
+          {BIRTH_YEARS.map((year) => (
+            <option key={year} value={year}>{year}</option>
+          ))}
+        </select>
+        <select
           value={sex}
           onChange={(event) => setSex(event.target.value)}
+          required
+          aria-label="Sex"
           className="rounded-md border border-white/10 bg-midnight px-3 py-2 text-sm text-white"
-          placeholder="Sex optional"
-        />
+        >
+          <option value="" disabled>Select sex…</option>
+          {SEX_OPTIONS.map((option) => (
+            <option key={option} value={option}>{option}</option>
+          ))}
+        </select>
       </div>
       <textarea
         value={notes}

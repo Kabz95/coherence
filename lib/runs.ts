@@ -52,9 +52,14 @@ export async function createNeuroRun(input: CreateRunInput): Promise<NeuroRun> {
     currentStage: stages[0]?.label ?? "Draft",
     stages,
     createdAt: nowIso(),
-    updatedAt: nowIso(),
-    clinicalContext: input.clinicalContext
+    updatedAt: nowIso()
   };
+
+  // Same rule as patient cases: Firestore rejects `undefined` field values,
+  // so only attach clinicalContext when the caller actually provided one.
+  if (input.clinicalContext !== undefined) {
+    run.clinicalContext = input.clinicalContext;
+  }
 
   if (!isFirebaseConfigured()) {
     throw new Error("Firebase is not configured. Add public Firebase web app values before creating runs.");
