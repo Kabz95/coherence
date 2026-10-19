@@ -44,6 +44,12 @@ export interface PatientCase {
   birthYear?: number;
   sex?: string;
   notes?: string;
+  /**
+   * Canonical clinical context, captured at case level. Runs snapshot this
+   * onto themselves at creation so historical runs keep the context that was
+   * true at the time; the case remains the editable source.
+   */
+  clinicalContext?: ClinicalContext;
   createdAt: string;
   updatedAt: string;
 }

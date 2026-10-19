@@ -1,6 +1,7 @@
 "use client";
 
 import { ChangeEvent, FormEvent, useMemo, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { AlertTriangle, FileUp, XCircle } from "lucide-react";
 import { isFirebaseConfigured } from "@/lib/firebase";
@@ -60,11 +61,25 @@ export function UploadPanel({ cases }: { cases: PatientCase[] }) {
   const [problems, setProblems] = useState<FileProblem[]>([]);
   const [message, setMessage] = useState<string>("");
   const [caseId, setCaseId] = useState(cases[0]?.id ?? "");
-  const [diagnoses, setDiagnoses] = useState("");
-  const [careContext, setCareContext] = useState("");
   const [busy, setBusy] = useState(false);
 
   const totalSize = useMemo(() => files.reduce((sum, file) => sum + file.size, 0), [files]);
+
+  // Clinical context is canonical at the case level. The run snapshots
+  // whatever the case holds at creation time; it is edited on the case.
+  const selectedCase = cases.find((patientCase) => patientCase.id === caseId);
+  const inheritedContext = selectedCase?.clinicalContext;
+  const inheritedSummary = useMemo(() => {
+    if (!inheritedContext) return null;
+    const parts: string[] = [];
+    if (inheritedContext.establishedDiagnoses.length)
+      parts.push(`${inheritedContext.establishedDiagnoses.length} diagnos${inheritedContext.establishedDiagnoses.length === 1 ? "is" : "es"}`);
+    if (inheritedContext.medications.length)
+      parts.push(`${inheritedContext.medications.length} medication${inheritedContext.medications.length === 1 ? "" : "s"}`);
+    if (inheritedContext.therapies.length)
+      parts.push(`${inheritedContext.therapies.length} ${inheritedContext.therapies.length === 1 ? "therapy" : "therapies"}`);
+    return parts.length ? parts.join(" · ") : null;
+  }, [inheritedContext]);
 
   function handleFiles(event: ChangeEvent<HTMLInputElement>) {
     const selected = Array.from(event.target.files ?? []);
@@ -131,15 +146,19 @@ export function UploadPanel({ cases }: { cases: PatientCase[] }) {
     setMessage("Creating run...");
 
     try {
-      const clinicalContext = {
-        establishedDiagnoses: diagnoses.split(",").map((item) => item.trim()).filter(Boolean),
-        medications: careContext ? [{ name: careContext, notes: "Clinician-entered context from upload workflow." }] : [],
-        therapies: [],
-        symptomScales: [],
-        clinicianNotes: "Clinician-entered context only. Coherence does not generate diagnoses.",
-      };
-
-      const run = await createNeuroRun({ caseId, modality, clinicalContext });
+      // Snapshot the case's clinical context onto the run so the run keeps
+      // the context that was true at creation time. The case stays the
+      // editable source; a per-run snapshot never rewrites it.
+      const hasContext =
+        inheritedContext &&
+        (inheritedContext.establishedDiagnoses.length > 0 ||
+          inheritedContext.medications.length > 0 ||
+          inheritedContext.therapies.length > 0);
+      const run = await createNeuroRun({
+        caseId,
+        modality,
+        clinicalContext: hasContext ? { ...inheritedContext } : undefined
+      });
       setMessage(`Uploading ${files.length} file(s)...`);
 
       const uploadedFiles = await Promise.all(
@@ -263,9 +282,21 @@ export function UploadPanel({ cases }: { cases: PatientCase[] }) {
         </div>
       ) : null}
 
-      <div className="grid gap-4 md:grid-cols-2">
-        <input value={diagnoses} onChange={(event) => setDiagnoses(event.target.value)} className="rounded-lg border border-white/10 bg-midnight px-3 py-2 text-sm text-white" placeholder="Clinician-entered diagnoses, comma separated (optional)" />
-        <input value={careContext} onChange={(event) => setCareContext(event.target.value)} className="rounded-lg border border-white/10 bg-midnight px-3 py-2 text-sm text-white" placeholder="Medication or therapy context (optional)" />
+      <div className="rounded-xl border border-white/10 bg-black/25 p-4">
+        <div className="text-sm font-medium text-white">Clinical context</div>
+        <p className="mt-1 text-xs text-slate-500">
+          Inherited from the case record and snapshotted onto this run. Edit it on the case, not here.
+        </p>
+        {caseId ? (
+          <div className="mt-2 flex flex-wrap items-center gap-3">
+            <span className="text-sm text-slate-300">
+              {inheritedSummary ?? "No clinical context recorded yet."}
+            </span>
+            <Link href={`/cases/${caseId}/edit`} className="text-sm text-cyan-200 hover:text-cyan-100">
+              Edit case context →
+            </Link>
+          </div>
+        ) : null}
       </div>
 
       <button type="submit" className="rounded-lg bg-cyan-300 px-4 py-2 text-sm font-semibold text-slate-950 disabled:cursor-not-allowed disabled:opacity-50 hover:bg-cyan-200" disabled={!configured || busy || !cases.length}>
