@@ -99,6 +99,69 @@ export function buildCaseTimeline(
         source: "clinician",
       });
     }
+
+    for (const lab of context.labEntries ?? []) {
+      events.push({
+        id: `${patientCase.id}-lab-${lab.testName}-${lab.date}`,
+        caseId: patientCase.id,
+        kind: "lab",
+        title: `${lab.testName}: ${lab.value}${lab.unit ? ` ${lab.unit}` : ""}`,
+        detail: [
+          lab.referenceRange ? `Reference range: ${lab.referenceRange}` : null,
+          lab.notes ?? null,
+        ]
+          .filter(Boolean)
+          .join(" · ") || undefined,
+        date: `${lab.date}T00:00:00.000Z`,
+        source: "clinician",
+      });
+    }
+
+    for (const sleep of context.sleepSummaries ?? []) {
+      const parts = [
+        sleep.typicalDuration ? `Typical duration: ${sleep.typicalDuration}` : null,
+        sleep.quality ? `Quality: ${sleep.quality}` : null,
+        sleep.disruption ? `Disruption: ${sleep.disruption}` : null,
+      ].filter(Boolean);
+      events.push({
+        id: `${patientCase.id}-sleep-${sleep.startDate}-${sleep.endDate}`,
+        caseId: patientCase.id,
+        kind: "sleep",
+        title: "Sleep summary",
+        detail: parts.join(" · ") || undefined,
+        date: `${sleep.startDate}T00:00:00.000Z`,
+        endDate: `${sleep.endDate}T00:00:00.000Z`,
+        source: sleep.source === "device" ? "device" : sleep.source === "patient" ? "patient" : "clinician",
+      });
+    }
+
+    for (const lifeEvent of context.lifeEvents ?? []) {
+      events.push({
+        id: `${patientCase.id}-life-${lifeEvent.category}-${lifeEvent.date}`,
+        caseId: patientCase.id,
+        kind: "life_event",
+        title: lifeEvent.category,
+        detail: lifeEvent.note ?? undefined,
+        date: `${lifeEvent.date}T00:00:00.000Z`,
+        ...(lifeEvent.endDate ? { endDate: `${lifeEvent.endDate}T00:00:00.000Z` } : {}),
+        source: "clinician",
+      });
+    }
+
+    for (const collateral of context.collateralEntries ?? []) {
+      const who = collateral.informantName
+        ? `${collateral.informantName} (${collateral.relationship})`
+        : collateral.relationship;
+      events.push({
+        id: `${patientCase.id}-collateral-${who}-${collateral.date}`,
+        caseId: patientCase.id,
+        kind: "collateral",
+        title: `Collateral — ${who}`,
+        detail: collateral.account,
+        date: `${collateral.date}T00:00:00.000Z`,
+        source: "informant",
+      });
+    }
   }
 
   return events.sort((a, b) => b.date.localeCompare(a.date));
