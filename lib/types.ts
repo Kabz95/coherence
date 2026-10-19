@@ -154,9 +154,17 @@ export interface ClinicalNote {
 
 export interface SymptomScaleEntry {
   name: string;
+  /** Computed total as a string, present only when every item was answered. Never typed. */
   score?: string;
   date?: string;
   notes?: string;
+  /** Item responses in instrument order; null = unanswered (partial administration). */
+  itemResponses?: Array<number | null>;
+  /** Who completed the instrument. */
+  completionSource?: "patient" | "clinician";
+  /** Definition id from the scale-definitions module, e.g. "phq-9". */
+  instrumentId?: string;
+  instrumentVersion?: string;
 }
 
 export interface NeuroRun {

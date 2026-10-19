@@ -65,12 +65,17 @@ export function buildCaseTimeline(
     }
 
     for (const scale of context.symptomScales) {
+      const missingItems = (scale.itemResponses ?? [])
+        .map((response, index) => (response === null ? index + 1 : undefined))
+        .filter((item): item is number => item !== undefined);
+      const partialLabel =
+        missingItems.length > 0 ? `Partial administration — unanswered items: ${missingItems.join(", ")}` : undefined;
       events.push({
         id: `${patientCase.id}-scale-${scale.name}-${scale.date ?? "nodate"}`,
         caseId: patientCase.id,
         kind: "symptom_scale",
         title: `${scale.name}: ${scale.score ?? "not scored"}`,
-        detail: scale.notes,
+        detail: [partialLabel, scale.notes].filter(Boolean).join(" · ") || undefined,
         date: scale.date ? `${scale.date}T00:00:00.000Z` : patientCase.createdAt,
         source: "clinician",
       });

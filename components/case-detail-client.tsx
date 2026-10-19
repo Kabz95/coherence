@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { CalendarDays, FileText, FlaskConical, Plus, Stethoscope } from "lucide-react";
+import { CalendarDays, FileText, FlaskConical, LineChart, Plus, Stethoscope } from "lucide-react";
 import { getPatientCase } from "@/lib/cases";
 import { getMockClinicalContext } from "@/lib/mock-data";
 import { appendClinicalNoteToRun, listRunsForCase } from "@/lib/runs";
@@ -13,6 +13,7 @@ import { ClinicalContextPanel } from "./cases/clinical-context-panel";
 import { ClinicalNotesPanel } from "./cases/clinical-notes-panel";
 import { LongitudinalComparison } from "./cases/longitudinal-comparison";
 import { CaseTimeline } from "./timeline/case-timeline";
+import { ScalesSection } from "./scales/scales-section";
 import { StatusChip } from "./status-chip";
 import { EmptyState, ErrorState } from "./ui/state";
 import { ProgressBar } from "./progress-bar";
@@ -20,6 +21,7 @@ import { ProgressBar } from "./progress-bar";
 const TABS = [
   { id: "overview", label: "Overview", icon: FileText },
   { id: "timeline", label: "Timeline", icon: CalendarDays },
+  { id: "scales", label: "Scales", icon: LineChart },
   { id: "clinical", label: "Clinical context", icon: Stethoscope },
   { id: "longitudinal", label: "Longitudinal", icon: FlaskConical },
 ] as const;
@@ -222,6 +224,16 @@ export function CaseDetailClient({ caseId }: { caseId: string }) {
       {tab === "timeline" ? (
         <div className="space-y-6">
           <CaseTimeline events={events} caseId={patientCase.id} referralQuestion={patientCase.referralQuestion} />
+        </div>
+      ) : null}
+
+      {tab === "scales" ? (
+        <div className="space-y-6">
+          <ScalesSection
+            patientCase={patientCase}
+            entries={context?.symptomScales ?? []}
+            onSaved={load}
+          />
         </div>
       ) : null}
 
