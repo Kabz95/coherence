@@ -4,6 +4,7 @@ import Link from "next/link";
 import { ReactNode } from "react";
 import { Activity, Brain, FileText, LayoutDashboard, Upload } from "lucide-react";
 import { AuthGate } from "./auth-gate";
+import { MobileNav } from "./mobile-nav";
 
 type AppShellProps = {
   children: ReactNode;
@@ -69,10 +70,12 @@ export function AppShell({ children }: AppShellProps) {
           </div>
         </header>
 
-        <div className="mx-auto max-w-7xl p-5">
+        <div className="mx-auto max-w-7xl p-5 pb-28 lg:pb-5">
           <AuthGate>{children}</AuthGate>
         </div>
       </main>
+
+      <MobileNav />
     </div>
   );
 }
