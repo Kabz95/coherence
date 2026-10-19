@@ -12,6 +12,7 @@ import type {
   ReferralQuestion,
   ReferralQuestionVersion,
   SleepSummary,
+  SymptomScaleEntry,
   TherapyEntry
 } from "./types";
 
@@ -125,7 +126,7 @@ function normalizeClinicalContext(value: unknown): ClinicalContext | undefined {
     establishedDiagnoses: stringList(data.establishedDiagnoses),
     medications: normalizeMedications(data.medications),
     therapies: normalizeTherapies(data.therapies),
-    symptomScales: [],
+    symptomScales: normalizeSymptomScales(data.symptomScales),
     ...(typeof data.clinicianNotes === "string" && data.clinicianNotes ? { clinicianNotes: data.clinicianNotes } : {}),
     ...(notes.length ? { notes } : {}),
     ...(labEntries.length ? { labEntries } : {}),
@@ -133,6 +134,34 @@ function normalizeClinicalContext(value: unknown): ClinicalContext | undefined {
     ...(lifeEvents.length ? { lifeEvents } : {}),
     ...(collateralEntries.length ? { collateralEntries } : {})
   };
+}
+
+function normalizeSymptomScales(value: unknown): SymptomScaleEntry[] {
+  if (!Array.isArray(value)) return [];
+  return value
+    .filter((item): item is Record<string, unknown> => typeof item === "object" && item !== null)
+    .map((item) => {
+      const rawResponses = Array.isArray(item.itemResponses) ? item.itemResponses : undefined;
+      // Firestore cannot store undefined inside arrays; unanswered items are null.
+      const itemResponses = rawResponses?.map((r) => (typeof r === "number" ? r : null));
+      const completionSource: unknown = item.completionSource;
+      const normalized: SymptomScaleEntry = {
+        name: typeof item.name === "string" ? item.name : "",
+        ...(typeof item.score === "string" && item.score ? { score: item.score } : {}),
+        ...(typeof item.date === "string" && item.date ? { date: item.date } : {}),
+        ...(typeof item.notes === "string" && item.notes ? { notes: item.notes } : {}),
+        ...(itemResponses ? { itemResponses } : {}),
+        ...(completionSource === "patient" || completionSource === "clinician"
+          ? { completionSource }
+          : {}),
+        ...(typeof item.instrumentId === "string" && item.instrumentId ? { instrumentId: item.instrumentId } : {}),
+        ...(typeof item.instrumentVersion === "string" && item.instrumentVersion
+          ? { instrumentVersion: item.instrumentVersion }
+          : {}),
+      };
+      return normalized;
+    })
+    .filter((scale) => scale.name !== "");
 }
 
 function normalizeReferralQuestion(value: unknown): ReferralQuestion | undefined {
