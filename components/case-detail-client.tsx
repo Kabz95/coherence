@@ -13,8 +13,6 @@ import { ClinicalContextPanel } from "./cases/clinical-context-panel";
 import { ClinicalNotesPanel } from "./cases/clinical-notes-panel";
 import { LongitudinalComparison } from "./cases/longitudinal-comparison";
 import { CaseTimeline } from "./timeline/case-timeline";
-import { MedicationTimeline } from "./timeline/medication-timeline";
-import { SymptomScaleTimeline } from "./timeline/symptom-scale-timeline";
 import { StatusChip } from "./status-chip";
 import { EmptyState, ErrorState } from "./ui/state";
 import { ProgressBar } from "./progress-bar";
@@ -223,9 +221,7 @@ export function CaseDetailClient({ caseId }: { caseId: string }) {
 
       {tab === "timeline" ? (
         <div className="space-y-6">
-          <CaseTimeline events={events} caseId={patientCase.id} />
-          <MedicationTimeline medications={context?.medications ?? []} />
-          <SymptomScaleTimeline context={context} />
+          <CaseTimeline events={events} caseId={patientCase.id} referralQuestion={patientCase.referralQuestion} />
         </div>
       ) : null}
 

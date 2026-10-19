@@ -50,8 +50,67 @@ export interface PatientCase {
    * true at the time; the case remains the editable source.
    */
   clinicalContext?: ClinicalContext;
+  /**
+   * The clinician's referral question in their own words, pinned above the
+   * unified timeline. One current question per case; superseded versions
+   * remain viewable in history.
+   */
+  referralQuestion?: ReferralQuestion;
   createdAt: string;
   updatedAt: string;
+}
+
+/** The clinician's question for the case, with its own edit history. */
+export interface ReferralQuestion {
+  text: string;
+  date: string;
+  author?: string;
+  history: ReferralQuestionVersion[];
+}
+
+export interface ReferralQuestionVersion {
+  text: string;
+  date: string;
+  author?: string;
+}
+
+/** A laboratory result or physical-health measurement, clinician-entered. */
+export interface LabEntry {
+  testName: string;
+  date: string;
+  value: string;
+  unit?: string;
+  /** The laboratory's own reference range, recorded at entry — never flagged beyond it. */
+  referenceRange?: string;
+  notes?: string;
+}
+
+/** A sleep/activity summary covering a period. Source is part of the fact. */
+export interface SleepSummary {
+  startDate: string;
+  endDate: string;
+  typicalDuration?: string;
+  quality?: string;
+  disruption?: string;
+  source: "clinician" | "patient" | "device";
+}
+
+/** A dated life event / psychosocial context marker. Context, not data. */
+export interface LifeEvent {
+  date: string;
+  endDate?: string;
+  category: string;
+  note?: string;
+}
+
+/** Informant/collateral input. Attributed, never merged with the patient's account. */
+export interface CollateralEntry {
+  informantName?: string;
+  relationship: string;
+  date: string;
+  periodStart?: string;
+  periodEnd?: string;
+  account: string;
 }
 
 export interface ClinicalContext {
@@ -62,6 +121,11 @@ export interface ClinicalContext {
   clinicianNotes?: string;
   /** Dated clinician notes, newest last. */
   notes?: ClinicalNote[];
+  /** New-domain streams for the unified timeline; captured case-level. */
+  labEntries?: LabEntry[];
+  sleepSummaries?: SleepSummary[];
+  lifeEvents?: LifeEvent[];
+  collateralEntries?: CollateralEntry[];
 }
 
 export interface MedicationEntry {
@@ -172,7 +236,11 @@ export type TimelineEventKind =
   | "medication"
   | "symptom_scale"
   | "therapy"
-  | "note";
+  | "note"
+  | "lab"
+  | "sleep"
+  | "life_event"
+  | "collateral";
 
 export const TIMELINE_EVENT_KINDS: readonly TimelineEventKind[] = [
   "case_created",
@@ -181,6 +249,10 @@ export const TIMELINE_EVENT_KINDS: readonly TimelineEventKind[] = [
   "symptom_scale",
   "therapy",
   "note",
+  "lab",
+  "sleep",
+  "life_event",
+  "collateral",
 ] as const;
 
 export interface TimelineEvent {
@@ -191,8 +263,11 @@ export interface TimelineEvent {
   detail?: string;
   /** ISO date string; the timeline sorts on this. */
   date: string;
+  /** For period events (sleep summaries, therapy episodes, life events): renders as a span. */
+  endDate?: string;
   runId?: string;
-  source: "clinician" | "pipeline" | "system";
+  /** Who the fact came from — part of the fact itself. */
+  source: "clinician" | "pipeline" | "system" | "informant" | "patient" | "device";
 }
 
 /** Structured structural-MRI measurements attached to a run's outputs. */

@@ -1,7 +1,19 @@
 import { isDemoMode } from "./demo";
 import { getFirebaseServices, isFirebaseConfigured } from "./firebase";
 import { mockCases } from "./mock-data";
-import type { ClinicalContext, ClinicalNote, MedicationEntry, PatientCase, TherapyEntry } from "./types";
+import type {
+  ClinicalContext,
+  ClinicalNote,
+  CollateralEntry,
+  LabEntry,
+  LifeEvent,
+  MedicationEntry,
+  PatientCase,
+  ReferralQuestion,
+  ReferralQuestionVersion,
+  SleepSummary,
+  TherapyEntry
+} from "./types";
 
 function timestampFallback(): string {
   return new Date().toISOString();
@@ -23,6 +35,11 @@ function normalizeMedications(value: unknown): MedicationEntry[] {
       ...(typeof item.notes === "string" && item.notes ? { notes: item.notes } : {})
     }))
     .filter((med) => med.name !== "");
+}
+
+function normalizeSleepSource(value: unknown): SleepSummary["source"] {
+  if (value === "device" || value === "patient" || value === "clinician") return value;
+  return "clinician";
 }
 
 function normalizeTherapies(value: unknown): TherapyEntry[] {
@@ -54,13 +71,89 @@ function normalizeClinicalContext(value: unknown): ClinicalContext | undefined {
         }))
         .filter((note) => note.body !== "")
     : [];
+  const labEntries: LabEntry[] = Array.isArray(data.labEntries)
+    ? data.labEntries
+        .filter((item): item is Record<string, unknown> => typeof item === "object" && item !== null)
+        .map((item) => ({
+          testName: typeof item.testName === "string" ? item.testName : "",
+          date: typeof item.date === "string" ? item.date : "",
+          value: typeof item.value === "string" ? item.value : "",
+          ...(typeof item.unit === "string" && item.unit ? { unit: item.unit } : {}),
+          ...(typeof item.referenceRange === "string" && item.referenceRange ? { referenceRange: item.referenceRange } : {}),
+          ...(typeof item.notes === "string" && item.notes ? { notes: item.notes } : {})
+        }))
+        .filter((lab) => lab.testName !== "" && lab.date !== "")
+    : [];
+  const sleepSummaries: SleepSummary[] = Array.isArray(data.sleepSummaries)
+    ? data.sleepSummaries
+        .filter((item): item is Record<string, unknown> => typeof item === "object" && item !== null)
+        .map((item) => ({
+          startDate: typeof item.startDate === "string" ? item.startDate : "",
+          endDate: typeof item.endDate === "string" ? item.endDate : "",
+          ...(typeof item.typicalDuration === "string" && item.typicalDuration ? { typicalDuration: item.typicalDuration } : {}),
+          ...(typeof item.quality === "string" && item.quality ? { quality: item.quality } : {}),
+          ...(typeof item.disruption === "string" && item.disruption ? { disruption: item.disruption } : {}),
+          source: normalizeSleepSource(item.source)
+        }))
+        .filter((sleep) => sleep.startDate !== "" && sleep.endDate !== "")
+    : [];
+  const lifeEvents: LifeEvent[] = Array.isArray(data.lifeEvents)
+    ? data.lifeEvents
+        .filter((item): item is Record<string, unknown> => typeof item === "object" && item !== null)
+        .map((item) => ({
+          date: typeof item.date === "string" ? item.date : "",
+          ...(typeof item.endDate === "string" && item.endDate ? { endDate: item.endDate } : {}),
+          category: typeof item.category === "string" ? item.category : "",
+          ...(typeof item.note === "string" && item.note ? { note: item.note } : {})
+        }))
+        .filter((event) => event.category !== "" && event.date !== "")
+    : [];
+  const collateralEntries: CollateralEntry[] = Array.isArray(data.collateralEntries)
+    ? data.collateralEntries
+        .filter((item): item is Record<string, unknown> => typeof item === "object" && item !== null)
+        .map((item) => ({
+          ...(typeof item.informantName === "string" && item.informantName ? { informantName: item.informantName } : {}),
+          relationship: typeof item.relationship === "string" ? item.relationship : "",
+          date: typeof item.date === "string" ? item.date : "",
+          ...(typeof item.periodStart === "string" && item.periodStart ? { periodStart: item.periodStart } : {}),
+          ...(typeof item.periodEnd === "string" && item.periodEnd ? { periodEnd: item.periodEnd } : {}),
+          account: typeof item.account === "string" ? item.account : ""
+        }))
+        .filter((entry) => entry.relationship !== "" && entry.account !== "")
+    : [];
   return {
     establishedDiagnoses: stringList(data.establishedDiagnoses),
     medications: normalizeMedications(data.medications),
     therapies: normalizeTherapies(data.therapies),
     symptomScales: [],
     ...(typeof data.clinicianNotes === "string" && data.clinicianNotes ? { clinicianNotes: data.clinicianNotes } : {}),
-    ...(notes.length ? { notes } : {})
+    ...(notes.length ? { notes } : {}),
+    ...(labEntries.length ? { labEntries } : {}),
+    ...(sleepSummaries.length ? { sleepSummaries } : {}),
+    ...(lifeEvents.length ? { lifeEvents } : {}),
+    ...(collateralEntries.length ? { collateralEntries } : {})
+  };
+}
+
+function normalizeReferralQuestion(value: unknown): ReferralQuestion | undefined {
+  if (typeof value !== "object" || value === null) return undefined;
+  const data = value as Record<string, unknown>;
+  if (typeof data.text !== "string" || !data.text) return undefined;
+  const history: ReferralQuestionVersion[] = Array.isArray(data.history)
+    ? data.history
+        .filter((item): item is Record<string, unknown> => typeof item === "object" && item !== null)
+        .map((item) => ({
+          text: typeof item.text === "string" ? item.text : "",
+          date: typeof item.date === "string" ? item.date : timestampFallback(),
+          ...(typeof item.author === "string" ? { author: item.author } : {})
+        }))
+        .filter((version) => version.text !== "")
+    : [];
+  return {
+    text: data.text,
+    date: typeof data.date === "string" ? data.date : timestampFallback(),
+    ...(typeof data.author === "string" ? { author: data.author } : {}),
+    history
   };
 }
 
@@ -72,6 +165,7 @@ function normalizeCase(id: string, data: Record<string, unknown>): PatientCase {
     sex: typeof data.sex === "string" ? data.sex : undefined,
     notes: typeof data.notes === "string" ? data.notes : undefined,
     clinicalContext: normalizeClinicalContext(data.clinicalContext),
+    referralQuestion: normalizeReferralQuestion(data.referralQuestion),
     createdAt: typeof data.createdAt === "string" ? data.createdAt : timestampFallback(),
     updatedAt: typeof data.updatedAt === "string" ? data.updatedAt : timestampFallback()
   };
@@ -126,6 +220,8 @@ export interface UpdateCaseInput {
   /** Empty string clears the notes field. */
   notes?: string;
   clinicalContext?: ClinicalContext;
+  /** Empty-string text clears the referral question. */
+  referralQuestion?: ReferralQuestion;
 }
 
 /**
@@ -153,6 +249,8 @@ export async function updatePatientCase(caseId: string, input: UpdateCaseInput):
   if (input.sex !== undefined) payload.sex = input.sex;
   if (input.notes !== undefined) payload.notes = input.notes === "" ? deleteField() : input.notes;
   if (input.clinicalContext !== undefined) payload.clinicalContext = input.clinicalContext;
+  if (input.referralQuestion !== undefined)
+    payload.referralQuestion = input.referralQuestion.text === "" ? deleteField() : input.referralQuestion;
   await updateDoc(doc(db, "patientCases", caseId), payload);
 }
 
