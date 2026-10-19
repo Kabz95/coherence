@@ -1,10 +1,67 @@
 import { isDemoMode } from "./demo";
 import { getFirebaseServices, isFirebaseConfigured } from "./firebase";
 import { mockCases } from "./mock-data";
-import type { PatientCase } from "./types";
+import type { ClinicalContext, ClinicalNote, MedicationEntry, PatientCase, TherapyEntry } from "./types";
 
 function timestampFallback(): string {
   return new Date().toISOString();
+}
+
+function stringList(value: unknown): string[] {
+  return Array.isArray(value) ? value.filter((item): item is string => typeof item === "string") : [];
+}
+
+function normalizeMedications(value: unknown): MedicationEntry[] {
+  if (!Array.isArray(value)) return [];
+  return value
+    .filter((item): item is Record<string, unknown> => typeof item === "object" && item !== null)
+    .map((item) => ({
+      name: typeof item.name === "string" ? item.name : "",
+      ...(typeof item.dose === "string" && item.dose ? { dose: item.dose } : {}),
+      ...(typeof item.startDate === "string" && item.startDate ? { startDate: item.startDate } : {}),
+      ...(typeof item.endDate === "string" && item.endDate ? { endDate: item.endDate } : {}),
+      ...(typeof item.notes === "string" && item.notes ? { notes: item.notes } : {})
+    }))
+    .filter((med) => med.name !== "");
+}
+
+function normalizeTherapies(value: unknown): TherapyEntry[] {
+  if (!Array.isArray(value)) return [];
+  return value
+    .filter((item): item is Record<string, unknown> => typeof item === "object" && item !== null)
+    .map((item) => ({
+      type: typeof item.type === "string" ? item.type : "",
+      ...(typeof item.frequency === "string" && item.frequency ? { frequency: item.frequency } : {}),
+      ...(typeof item.startDate === "string" && item.startDate ? { startDate: item.startDate } : {}),
+      ...(typeof item.endDate === "string" && item.endDate ? { endDate: item.endDate } : {}),
+      ...(typeof item.notes === "string" && item.notes ? { notes: item.notes } : {})
+    }))
+    .filter((therapy) => therapy.type !== "");
+}
+
+/** Defensive parse of the case-level clinical context; unknown shapes become empty. */
+function normalizeClinicalContext(value: unknown): ClinicalContext | undefined {
+  if (typeof value !== "object" || value === null) return undefined;
+  const data = value as Record<string, unknown>;
+  const notes: ClinicalNote[] = Array.isArray(data.notes)
+    ? data.notes
+        .filter((item): item is Record<string, unknown> => typeof item === "object" && item !== null)
+        .map((item) => ({
+          id: typeof item.id === "string" ? item.id : `note-${Math.random().toString(36).slice(2)}`,
+          date: typeof item.date === "string" ? item.date : timestampFallback(),
+          ...(typeof item.author === "string" ? { author: item.author } : {}),
+          body: typeof item.body === "string" ? item.body : ""
+        }))
+        .filter((note) => note.body !== "")
+    : [];
+  return {
+    establishedDiagnoses: stringList(data.establishedDiagnoses),
+    medications: normalizeMedications(data.medications),
+    therapies: normalizeTherapies(data.therapies),
+    symptomScales: [],
+    ...(typeof data.clinicianNotes === "string" && data.clinicianNotes ? { clinicianNotes: data.clinicianNotes } : {}),
+    ...(notes.length ? { notes } : {})
+  };
 }
 
 function normalizeCase(id: string, data: Record<string, unknown>): PatientCase {
@@ -14,6 +71,7 @@ function normalizeCase(id: string, data: Record<string, unknown>): PatientCase {
     birthYear: typeof data.birthYear === "number" ? data.birthYear : undefined,
     sex: typeof data.sex === "string" ? data.sex : undefined,
     notes: typeof data.notes === "string" ? data.notes : undefined,
+    clinicalContext: normalizeClinicalContext(data.clinicalContext),
     createdAt: typeof data.createdAt === "string" ? data.createdAt : timestampFallback(),
     updatedAt: typeof data.updatedAt === "string" ? data.updatedAt : timestampFallback()
   };
@@ -46,6 +104,7 @@ export async function createPatientCase(input: Omit<PatientCase, "id" | "created
   if (input.birthYear !== undefined) payload.birthYear = input.birthYear;
   if (input.sex !== undefined) payload.sex = input.sex;
   if (input.notes !== undefined) payload.notes = input.notes;
+  if (input.clinicalContext !== undefined) payload.clinicalContext = input.clinicalContext;
   const ref = await addDoc(collection(db, "patientCases"), payload);
 
   return {
@@ -53,10 +112,48 @@ export async function createPatientCase(input: Omit<PatientCase, "id" | "created
     ...(input.birthYear !== undefined ? { birthYear: input.birthYear } : {}),
     ...(input.sex !== undefined ? { sex: input.sex } : {}),
     ...(input.notes !== undefined ? { notes: input.notes } : {}),
+    ...(input.clinicalContext !== undefined ? { clinicalContext: input.clinicalContext } : {}),
     id: ref.id,
     createdAt: now,
     updatedAt: now
   };
+}
+
+export interface UpdateCaseInput {
+  displayName?: string;
+  birthYear?: number;
+  sex?: string;
+  /** Empty string clears the notes field. */
+  notes?: string;
+  clinicalContext?: ClinicalContext;
+}
+
+/**
+ * Edit a case. Only defined fields are written; empty-string notes clears
+ * the field. Always touches updatedAt. The edit-case view is the only
+ * caller — case metadata is no longer write-once.
+ */
+export async function updatePatientCase(caseId: string, input: UpdateCaseInput): Promise<void> {
+  if (isDemoMode()) {
+    throw new Error("Demo mode is read-only. Configure Firebase to edit live cases.");
+  }
+
+  if (!isFirebaseConfigured()) {
+    throw new Error("Firebase is not configured. Add public Firebase web app values before editing cases.");
+  }
+
+  const { deleteField, doc, serverTimestamp, updateDoc } = await import("firebase/firestore/lite");
+  const { db } = await getFirebaseServices();
+  const payload: Record<string, unknown> = {
+    updatedAt: timestampFallback(),
+    serverUpdatedAt: serverTimestamp()
+  };
+  if (input.displayName !== undefined) payload.displayName = input.displayName;
+  if (input.birthYear !== undefined) payload.birthYear = input.birthYear;
+  if (input.sex !== undefined) payload.sex = input.sex;
+  if (input.notes !== undefined) payload.notes = input.notes === "" ? deleteField() : input.notes;
+  if (input.clinicalContext !== undefined) payload.clinicalContext = input.clinicalContext;
+  await updateDoc(doc(db, "patientCases", caseId), payload);
 }
 
 export async function listPatientCases(): Promise<PatientCase[]> {
