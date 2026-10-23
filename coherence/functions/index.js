@@ -21,6 +21,7 @@ const JOBS = {
   structural_prep: { jobNames: ["coherence-structural-prep", "job-structural-prep"], regions: [GPU_REGION, CPU_REGION], modalities: ["structural_mri", "multimodal"] },
   structural_analysis: { jobNames: ["coherence-structural-analysis", "job-structural-analysis"], regions: [GPU_REGION, CPU_REGION], modalities: ["structural_mri", "multimodal"] },
   structural_3d_prep: { jobNames: ["coherence-structural-3d-prep", "job-structural-3d-prep"], regions: [GPU_REGION, CPU_REGION], modalities: ["structural_mri", "multimodal"] },
+  normative_model_apply: { jobNames: ["coherence-normative-model-apply", "job-normative-model-apply"], regions: [CPU_REGION], modalities: ["structural_mri", "multimodal"] },
   diffusion_prep: { jobNames: ["coherence-diffusion-prep", "job-diffusion-prep"], regions: [GPU_REGION, CPU_REGION], modalities: ["diffusion_mri", "multimodal"] },
   diffusion_analysis: { jobNames: ["coherence-diffusion-analysis", "job-diffusion-analysis"], regions: [GPU_REGION, CPU_REGION], modalities: ["diffusion_mri", "multimodal"] },
   diffusion_3d_prep: { jobNames: ["coherence-diffusion-3d-prep", "job-diffusion-3d-prep"], regions: [GPU_REGION, CPU_REGION], modalities: ["diffusion_mri", "multimodal"] },
@@ -323,12 +324,12 @@ async function launchNextStageForRun(runId, requestedByUid) {
       { merge: true }
     );
 
-    return { runId, caseId, modality, launched: priorLaunched, failed: priorFailed, missing: priorMissing, complete: true };
+    return { runId, caseId, modality, launched: [], failed: priorFailed, missing: priorMissing, complete: true };
   }
 
   const next = nextLaunchableStage(stages, jobs);
   if (!next) {
-    return { runId, caseId, modality, launched: priorLaunched, failed: priorFailed, missing: priorMissing, alreadyStarted: true };
+    return { runId, caseId, modality, launched: [], failed: priorFailed, missing: priorMissing, alreadyStarted: true };
   }
 
   const launched = [];
