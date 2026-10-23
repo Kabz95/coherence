@@ -1,8 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Box, Layers, Lock, ScanLine } from "lucide-react";
 import { StatusChip } from "../status-chip";
+import { getFirebaseServices, isFirebaseConfigured } from "@/lib/firebase";
+import { readLiveViewerAssets } from "@/lib/live-outputs";
 import type { NeuroRun } from "@/lib/types";
 
 type StructuralTab = "slices" | "volume";
@@ -15,17 +17,33 @@ const ROADMAP_TABS = [
 function AssetStatus({ run }: { run: NeuroRun }) {
   const assets = run.outputs?.visualizationAssets ?? {};
   const keys = Object.keys(assets);
-  if (!keys.length) {
+  if (keys.length) {
     return (
       <p className="mt-3 text-xs text-slate-500">
-        No rendered viewer assets are attached to this run yet. When the backend
-        visualization jobs complete, slice montages and volume renders appear here.
+        {keys.length} rendered asset(s) attached: {keys.join(", ")}.
+      </p>
+    );
+  }
+  // Live backend layout: assets ride on the 3D prep stage record instead of
+  // outputs.visualizationAssets (see lib/live-outputs.ts).
+  const live = readLiveViewerAssets(run);
+  const parts: string[] = [];
+  if (live.previews.length) {
+    parts.push(`${live.previews.length} plane preview(s): ${live.previews.map((preview) => preview.label).join(", ")}`);
+  }
+  if (live.volumeStoragePath) parts.push(`brain volume (${live.volumeFileName ?? "volume"})`);
+  if (live.overlayCount) parts.push(`${live.overlayCount} region overlay(s)`);
+  if (parts.length) {
+    return (
+      <p className="mt-3 text-xs text-slate-500">
+        Rendered assets attached: {parts.join(" · ")}.
       </p>
     );
   }
   return (
     <p className="mt-3 text-xs text-slate-500">
-      {keys.length} rendered asset(s) attached: {keys.join(", ")}.
+      No rendered viewer assets are attached to this run yet. When the backend
+      visualization jobs complete, slice montages and volume renders appear here.
     </p>
   );
 }
@@ -41,6 +59,39 @@ export function StructuralViewer({ run }: { run: NeuroRun }) {
   const assets = run.outputs?.visualizationAssets ?? {};
   const sliceAsset = assets["slice_montage"] ?? assets["mri2d"];
   const volumeAsset = assets["volume_render"] ?? assets["mri3d"];
+
+  // Live backend layout: plane previews and the brain volume ride on the
+  // 3D prep stage record (see lib/live-outputs.ts). Preview images live in
+  // Firebase Storage, so resolve download URLs for the paths the job left.
+  const liveAssets = useMemo(() => readLiveViewerAssets(run), [run]);
+  const [previewUrls, setPreviewUrls] = useState<Record<string, string>>({});
+  useEffect(() => {
+    let cancelled = false;
+    const previews = liveAssets.previews;
+    if (!previews.length || !isFirebaseConfigured()) return;
+    void (async () => {
+      try {
+        const { getDownloadURL, ref } = await import("firebase/storage");
+        const { storage } = await getFirebaseServices();
+        const resolved: Record<string, string> = {};
+        await Promise.all(
+          previews.map(async (preview) => {
+            try {
+              resolved[preview.storagePath] = await getDownloadURL(ref(storage, preview.storagePath));
+            } catch {
+              // Leave unresolved; the tile falls back to its label.
+            }
+          }),
+        );
+        if (!cancelled) setPreviewUrls(resolved);
+      } catch {
+        // Storage unavailable in this shell; the asset inventory still shows.
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [liveAssets]);
 
   return (
     <section aria-label="Structural MRI viewer" className="rounded-2xl border border-white/10 bg-panel/80 p-5">
@@ -103,6 +154,26 @@ export function StructuralViewer({ run }: { run: NeuroRun }) {
           sliceAsset ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={sliceAsset} alt="Structural MRI slice montage" className="h-full max-h-[480px] w-full object-contain" />
+          ) : liveAssets.previews.length ? (
+            <div className="grid gap-3 p-4 sm:grid-cols-3">
+              {liveAssets.previews.map((preview) => (
+                <figure key={preview.storagePath} className="space-y-2">
+                  {previewUrls[preview.storagePath] ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={previewUrls[preview.storagePath]}
+                      alt={`${preview.label} structural MRI preview`}
+                      className="w-full rounded-lg border border-white/10 bg-black/30 object-contain"
+                    />
+                  ) : (
+                    <div className="flex h-40 items-center justify-center rounded-lg border border-dashed border-white/15 p-4 text-center text-xs text-slate-500">
+                      {preview.label} preview attached — image unavailable in this view.
+                    </div>
+                  )}
+                  <figcaption className="text-center text-xs text-slate-400">{preview.label}</figcaption>
+                </figure>
+              ))}
+            </div>
           ) : (
             <div className="flex min-h-[340px] flex-col items-center justify-center p-8 text-center">
               <Layers className="h-12 w-12 text-cyan-200/70" aria-hidden />
@@ -116,6 +187,20 @@ export function StructuralViewer({ run }: { run: NeuroRun }) {
         ) : volumeAsset ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={volumeAsset} alt="Structural MRI volume render" className="h-full max-h-[480px] w-full object-contain" />
+        ) : liveAssets.volumeStoragePath ? (
+          <div className="flex min-h-[340px] flex-col items-center justify-center p-8 text-center">
+            <Box className="h-12 w-12 text-cyan-200/70" aria-hidden />
+            <h3 className="mt-4 text-base font-semibold text-white">Brain volume attached</h3>
+            <p className="mt-2 max-w-lg text-sm leading-6 text-slate-300">
+              The 3D structural assets job attached the brain-only volume{" "}
+              <span className="text-slate-100">{liveAssets.volumeFileName ?? "volume"}</span>
+              {liveAssets.overlayCount
+                ? ` and ${liveAssets.overlayCount} region overlay(s)`
+                : ""}{" "}
+              to this run. Interactive volume rendering (NiiVue) mounts at this integration
+              point; the rendered plane previews are under 2D slices.
+            </p>
+          </div>
         ) : (
           <div className="flex min-h-[340px] flex-col items-center justify-center p-8 text-center">
             <Box className="h-12 w-12 text-cyan-200/70" aria-hidden />
