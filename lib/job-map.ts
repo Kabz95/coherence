@@ -80,6 +80,16 @@ export const JOB_DEFINITIONS: JobDefinition[] = [
     description: "Prepare future 3D viewer assets.",
   },
   {
+    jobName: "coherence-normative-model-apply",
+    label: "Normative scoring",
+    modality: "structural_mri",
+    stage: "normative-model-apply",
+    region: CPU_REGION,
+    requiresGpu: false,
+    estimatedDurationSeconds: 600,
+    description: "Compare structural measurements with normative reference ranges.",
+  },
+  {
     jobName: "coherence-diffusion-prep",
     label: "Diffusion preparation",
     modality: "diffusion_mri",
@@ -280,6 +290,7 @@ export function jobsForModality(modality: Modality): JobDefinition[] {
       getJob("structural-prep"),
       getJob("structural-analysis"),
       getJob("structural-3d-prep"),
+      getJob("normative-model-apply"),
       getJob("longitudinal-analysis"),
       getJob("report-builder"),
     ];
@@ -347,6 +358,7 @@ export function jobsForModality(modality: Modality): JobDefinition[] {
     getJob("structural-prep"),
     getJob("structural-analysis"),
     getJob("structural-3d-prep"),
+    getJob("normative-model-apply"),
     getJob("diffusion-prep"),
     getJob("diffusion-analysis"),
     getJob("diffusion-3d-prep"),
