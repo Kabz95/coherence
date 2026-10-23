@@ -3,8 +3,9 @@
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { FileText, GitCompareArrows, TimerReset } from "lucide-react";
+import { FileText, GitCompareArrows, RefreshCw, RotateCcw, TimerReset } from "lucide-react";
 import { calculatePipelineProgress, formatDuration } from "@/lib/pipeline-progress";
+import { refreshRunPipeline, restartRunPipeline } from "@/lib/pipeline";
 import { buildStructuralReportSections } from "@/lib/reports/structural-summary";
 import { buildModalityReportSections } from "@/lib/reports/modality-summary";
 import { getNeuroRun } from "@/lib/runs";
@@ -48,6 +49,9 @@ export function RunDetailClient({ caseId: caseIdOverride, runId: runIdOverride }
   const [run, setRun] = useState<NeuroRun | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [actionBusy, setActionBusy] = useState<"refresh" | "restart" | null>(null);
+  const [actionMessage, setActionMessage] = useState("");
+  const [actionError, setActionError] = useState("");
   const nowMs = useNow();
   const visibleStages = useMemo(() => run?.stages ?? [], [run]);
   const progress = useMemo(() => calculatePipelineProgress(visibleStages, nowMs), [visibleStages, nowMs]);
@@ -70,6 +74,49 @@ export function RunDetailClient({ caseId: caseIdOverride, runId: runIdOverride }
       setLoading(false);
     }
   }, [runId]);
+
+  const hasFailedStage = visibleStages.some((stage) => stage.status === "failed");
+  const showRestart = hasFailedStage || run?.status === "failed";
+  const isComplete = run?.status === "completed";
+
+  const handleRefresh = async () => {
+    if (!runId || actionBusy) return;
+    setActionBusy("refresh");
+    setActionMessage("");
+    setActionError("");
+    try {
+      const result = await refreshRunPipeline(runId);
+      if (result.complete) setActionMessage("Pipeline refreshed — all stages are complete.");
+      else if (result.launched?.length) setActionMessage("Pipeline refreshed — the next stage was launched.");
+      else if (result.alreadyStarted) setActionMessage("Pipeline refreshed — a stage is already running.");
+      else setActionMessage("Pipeline refreshed — nothing needed to advance.");
+      await loadRun(false);
+    } catch (nextError) {
+      setActionError(nextError instanceof Error ? nextError.message : "Refresh failed.");
+    } finally {
+      setActionBusy(null);
+    }
+  };
+
+  const handleRestart = async () => {
+    if (!runId || actionBusy) return;
+    if (!window.confirm("Restart the pipeline from the failed stage? Completed stages keep their outputs.")) return;
+    setActionBusy("restart");
+    setActionMessage("");
+    setActionError("");
+    try {
+      const result = await restartRunPipeline(runId);
+      if (result.restarted === false) setActionMessage("Nothing to restart — no failed stages were found.");
+      else if (result.complete) setActionMessage("Pipeline restarted — all stages are now complete.");
+      else if (result.launched?.length) setActionMessage("Pipeline restarted — the failed stage was relaunched.");
+      else setActionMessage("Pipeline restarted.");
+      await loadRun(false);
+    } catch (nextError) {
+      setActionError(nextError instanceof Error ? nextError.message : "Restart failed.");
+    } finally {
+      setActionBusy(null);
+    }
+  };
 
   useEffect(() => {
     loadRun(true);
@@ -162,6 +209,33 @@ export function RunDetailClient({ caseId: caseIdOverride, runId: runIdOverride }
             </span>
           </div>
         </div>
+
+        {run ? (
+          <div className="mt-5 flex flex-wrap items-center gap-3 border-t border-white/10 pt-4">
+            <button
+              type="button"
+              onClick={handleRefresh}
+              disabled={actionBusy !== null || isComplete}
+              className="inline-flex items-center gap-2 rounded-xl border border-white/10 px-4 py-2 text-sm text-slate-200 hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              <RefreshCw className={`h-4 w-4 ${actionBusy === "refresh" ? "animate-spin" : ""}`} />
+              {actionBusy === "refresh" ? "Refreshing…" : "Refresh pipeline"}
+            </button>
+            {showRestart ? (
+              <button
+                type="button"
+                onClick={handleRestart}
+                disabled={actionBusy !== null}
+                className="inline-flex items-center gap-2 rounded-xl border border-rose-300/30 bg-rose-300/10 px-4 py-2 text-sm font-medium text-rose-100 hover:bg-rose-300/20 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <RotateCcw className={`h-4 w-4 ${actionBusy === "restart" ? "animate-spin" : ""}`} />
+                {actionBusy === "restart" ? "Restarting…" : "Restart pipeline"}
+              </button>
+            ) : null}
+            {actionMessage ? <span className="text-sm text-emerald-200">{actionMessage}</span> : null}
+            {actionError ? <span className="text-sm text-rose-200">{actionError}</span> : null}
+          </div>
+        ) : null}
       </section>
 
       {run ? <RunTimeline stages={visibleStages} /> : null}

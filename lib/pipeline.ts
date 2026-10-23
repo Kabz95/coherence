@@ -22,3 +22,36 @@ export async function startRunPipeline(runId: string): Promise<StartRunPipelineR
   const result = await callable({ runId });
   return result.data;
 }
+
+export interface RefreshRunPipelineResult extends StartRunPipelineResult {
+  refreshed?: boolean;
+  advanced?: boolean;
+  complete?: boolean;
+  status?: string;
+}
+
+export interface RestartRunPipelineResult extends StartRunPipelineResult {
+  restarted?: boolean;
+  resetStages?: string[];
+  reason?: string;
+  complete?: boolean;
+}
+
+async function callPipelineFunction<T>(name: string, runId: string): Promise<T> {
+  if (!isFirebaseConfigured()) {
+    throw new Error("Firebase is not configured. Add .env.local values before managing a pipeline.");
+  }
+
+  const { functions } = await getFirebaseServices();
+  const callable = httpsCallable<{ runId: string }, T>(functions, name);
+  const result = await callable({ runId });
+  return result.data;
+}
+
+export function refreshRunPipeline(runId: string): Promise<RefreshRunPipelineResult> {
+  return callPipelineFunction<RefreshRunPipelineResult>("refreshRunPipeline", runId);
+}
+
+export function restartRunPipeline(runId: string): Promise<RestartRunPipelineResult> {
+  return callPipelineFunction<RestartRunPipelineResult>("restartRunPipeline", runId);
+}
