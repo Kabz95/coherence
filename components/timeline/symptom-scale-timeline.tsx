@@ -36,10 +36,10 @@ function Sparkline({ points }: { points: Array<{ date: string; score: string }> 
   return (
     <div>
       <svg width={width} height={height} role="img" aria-label={`Score trend from ${first} to ${last}`} className="overflow-visible">
-        <polyline points={coords.join(" ")} fill="none" stroke="#67e8f9" strokeWidth={2} strokeLinejoin="round" strokeLinecap="round" />
+        <polyline points={coords.join(" ")} fill="none" stroke="#b87333" strokeWidth={2} strokeLinejoin="round" strokeLinecap="round" />
         {numeric.map((point, i) => {
           const [x, y] = coords[i].split(",").map(Number);
-          return <circle key={i} cx={x} cy={y} r={3.5} fill="#0b1020" stroke="#67e8f9" strokeWidth={2} />;
+          return <circle key={i} cx={x} cy={y} r={3.5} fill="#0d0d10" stroke="#b87333" strokeWidth={2} />;
         })}
       </svg>
       <p className={`mt-1 text-xs font-medium ${trendTone}`}>{trend}</p>

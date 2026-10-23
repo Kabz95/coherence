@@ -231,9 +231,9 @@ export function UploadPanel({ cases }: { cases: PatientCase[] }) {
         </div>
       </div>
 
-      <div className="rounded-xl border border-dashed border-cyan-300/35 bg-cyan-300/5 p-6">
+      <div className="rounded-xl border border-dashed border-copper-300/35 bg-copper-300/5 p-6">
         <label className="flex cursor-pointer flex-col items-center text-center" htmlFor="files">
-          <FileUp className="h-10 w-10 text-cyan-200" />
+          <FileUp className="h-10 w-10 text-copper-200" />
           <span className="mt-3 font-medium text-white">Select neuro data files</span>
           <span className="mt-1 text-sm text-slate-300">{acceptedExamples[modality].join(", ")}</span>
           <span className="mt-1 text-xs text-slate-500">Up to {MAX_FILES} files · {(MAX_TOTAL_BYTES / 1024 ** 3).toFixed(0)} GB total</span>
@@ -292,14 +292,14 @@ export function UploadPanel({ cases }: { cases: PatientCase[] }) {
             <span className="text-sm text-slate-300">
               {inheritedSummary ?? "No clinical context recorded yet."}
             </span>
-            <Link href={`/cases/${caseId}/edit`} className="text-sm text-cyan-200 hover:text-cyan-100">
+            <Link href={`/cases/${caseId}/edit`} className="text-sm text-copper-200 hover:text-copper-100">
               Edit case context →
             </Link>
           </div>
         ) : null}
       </div>
 
-      <button type="submit" className="rounded-lg bg-cyan-300 px-4 py-2 text-sm font-semibold text-slate-950 disabled:cursor-not-allowed disabled:opacity-50 hover:bg-cyan-200" disabled={!configured || busy || !cases.length}>
+      <button type="submit" className="rounded-lg bg-copper-300 px-4 py-2 text-sm font-semibold text-slate-950 disabled:cursor-not-allowed disabled:opacity-50 hover:bg-copper-200" disabled={!configured || busy || !cases.length}>
         {busy ? "Working..." : "Create run and upload"}
       </button>
       {busy ? <ProgressBar label="Processing upload" detail={message || "Please keep this page open"} /> : null}

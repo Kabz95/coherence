@@ -40,7 +40,7 @@ export function ReportDetailClient({ runIdOverride }: { runIdOverride?: string }
   }, [runId]);
 
   if (loading) return <ProgressBar label="Loading report" detail="Fetching report inputs" />;
-  if (error || !run) return <div className="rounded-lg border border-rose-300/30 bg-rose-300/10 p-5 text-sm text-rose-100">{error || "Report not found."}</div>;
+  if (error || !run) return <div className="rounded-lg border border-rose-200 bg-rose-50 p-5 text-sm text-rose-800">{error || "Report not found."}</div>;
 
   return <ReportPreview run={run} patientCase={patientCase} />;
 }

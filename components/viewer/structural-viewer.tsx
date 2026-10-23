@@ -177,8 +177,8 @@ export function StructuralViewer({ run }: { run: NeuroRun }) {
           onClick={() => setTab("slices")}
           className={`inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-sm ${
             tab === "slices"
-              ? "border-cyan-300 bg-cyan-300/10 text-cyan-50"
-              : "border-white/10 bg-white/[0.03] text-slate-300 hover:border-cyan-300/40"
+              ? "border-copper-300 bg-copper-300/10 text-copper-50"
+              : "border-white/10 bg-white/[0.03] text-slate-300 hover:border-copper-300/40"
           }`}
         >
           <ScanLine className="h-4 w-4" />
@@ -191,8 +191,8 @@ export function StructuralViewer({ run }: { run: NeuroRun }) {
           onClick={() => setTab("volume")}
           className={`inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-sm ${
             tab === "volume"
-              ? "border-cyan-300 bg-cyan-300/10 text-cyan-50"
-              : "border-white/10 bg-white/[0.03] text-slate-300 hover:border-cyan-300/40"
+              ? "border-copper-300 bg-copper-300/10 text-copper-50"
+              : "border-white/10 bg-white/[0.03] text-slate-300 hover:border-copper-300/40"
           }`}
         >
           <Box className="h-4 w-4" />
@@ -213,7 +213,7 @@ export function StructuralViewer({ run }: { run: NeuroRun }) {
         ))}
       </div>
 
-      <div className="mt-4 min-h-[340px] overflow-hidden rounded-xl border border-white/10 bg-[radial-gradient(circle_at_center,rgba(103,232,249,0.12),rgba(8,13,27,0.95)_55%)]">
+      <div className="mt-4 min-h-[340px] overflow-hidden rounded-lg border border-line bg-[#050607]">
         {tab === "slices" ? (
           sliceAsset ? (
             // eslint-disable-next-line @next/next/no-img-element
@@ -240,7 +240,7 @@ export function StructuralViewer({ run }: { run: NeuroRun }) {
             </div>
           ) : (
             <div className="flex min-h-[340px] flex-col items-center justify-center p-8 text-center">
-              <Layers className="h-12 w-12 text-cyan-200/70" aria-hidden />
+              <Layers className="h-12 w-12 text-copper-200/70" aria-hidden />
               <h3 className="mt-4 text-base font-semibold text-white">2D slice viewer</h3>
               <p className="mt-2 max-w-lg text-sm leading-6 text-slate-300">
                 Axial, coronal, and sagittal slice montages will render here once the
@@ -255,7 +255,7 @@ export function StructuralViewer({ run }: { run: NeuroRun }) {
           <NiivueViewer volumeUrl={volumeUrls.volume} overlayUrl={volumeUrls.overlay} onLabelPick={handleLabelPick} />
         ) : liveAssets.volumeStoragePath ? (
           <div className="flex min-h-[340px] flex-col items-center justify-center p-8 text-center">
-            <Box className="h-12 w-12 text-cyan-200/70" aria-hidden />
+            <Box className="h-12 w-12 text-copper-200/70" aria-hidden />
             <h3 className="mt-4 text-base font-semibold text-white">Brain volume attached</h3>
             <p className="mt-2 max-w-lg text-sm leading-6 text-slate-300">
               The 3D structural assets job attached the brain-only volume{" "}
@@ -269,7 +269,7 @@ export function StructuralViewer({ run }: { run: NeuroRun }) {
           </div>
         ) : (
           <div className="flex min-h-[340px] flex-col items-center justify-center p-8 text-center">
-            <Box className="h-12 w-12 text-cyan-200/70" aria-hidden />
+            <Box className="h-12 w-12 text-copper-200/70" aria-hidden />
             <h3 className="mt-4 text-base font-semibold text-white">3D volume viewer</h3>
             <p className="mt-2 max-w-lg text-sm leading-6 text-slate-300">
               Interactive volume and surface renders (NiiVue integration point) will
@@ -280,7 +280,7 @@ export function StructuralViewer({ run }: { run: NeuroRun }) {
       </div>
 
       {selectedRegion ? (
-        <div className="mt-4 rounded-xl border border-cyan-300/25 bg-cyan-300/[0.05] p-4">
+        <div className="mt-4 rounded-xl border border-copper-300/25 bg-copper-300/[0.05] p-4">
           <div className="flex items-start justify-between gap-3">
             <div>
               <h3 className="text-sm font-semibold text-white">{selectedRegion.displayName}</h3>
@@ -293,7 +293,7 @@ export function StructuralViewer({ run }: { run: NeuroRun }) {
               type="button"
               onClick={() => setSelectedRegion(null)}
               aria-label="Clear selected region"
-              className="rounded-md border border-white/10 p-1 text-slate-400 hover:border-cyan-300/40 hover:text-slate-200"
+              className="rounded-md border border-white/10 p-1 text-slate-400 hover:border-copper-300/40 hover:text-slate-200"
             >
               <X className="h-3.5 w-3.5" />
             </button>
@@ -359,8 +359,8 @@ export function StructuralViewer({ run }: { run: NeuroRun }) {
                         aria-pressed={hemisphereFilter === hemisphere}
                         className={`rounded-full border px-2.5 py-1 text-xs capitalize ${
                           hemisphereFilter === hemisphere
-                            ? "border-cyan-300 bg-cyan-300/10 text-cyan-50"
-                            : "border-white/10 bg-white/[0.03] text-slate-300 hover:border-cyan-300/40"
+                            ? "border-copper-300 bg-copper-300/10 text-copper-50"
+                            : "border-white/10 bg-white/[0.03] text-slate-300 hover:border-copper-300/40"
                         }`}
                       >
                         {hemisphere === "all" ? "All" : hemisphere}
@@ -377,8 +377,8 @@ export function StructuralViewer({ run }: { run: NeuroRun }) {
                       aria-pressed={selectedRegion === region}
                       className={`rounded-lg border px-2.5 py-1.5 text-left text-xs ${
                         selectedRegion === region
-                          ? "border-cyan-300 bg-cyan-300/15 text-cyan-50"
-                          : "border-white/10 bg-white/[0.03] text-slate-300 hover:border-cyan-300/40"
+                          ? "border-copper-300 bg-copper-300/15 text-copper-50"
+                          : "border-white/10 bg-white/[0.03] text-slate-300 hover:border-copper-300/40"
                       }`}
                     >
                       {region.displayName}

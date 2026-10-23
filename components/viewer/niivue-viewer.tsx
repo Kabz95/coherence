@@ -158,8 +158,8 @@ export function NiivueViewer({ volumeUrl, overlayUrl, onLabelPick }: NiivueViewe
                 aria-pressed={view === button.id}
                 className={`rounded-lg border px-2.5 py-1.5 text-xs ${
                   view === button.id
-                    ? "border-cyan-300 bg-cyan-300/10 text-cyan-50"
-                    : "border-white/10 bg-white/[0.03] text-slate-300 hover:border-cyan-300/40"
+                    ? "border-copper-300 bg-copper-300/10 text-copper-50"
+                    : "border-white/10 bg-white/[0.03] text-slate-300 hover:border-copper-300/40"
                 }`}
               >
                 {button.label}
@@ -173,7 +173,7 @@ export function NiivueViewer({ volumeUrl, overlayUrl, onLabelPick }: NiivueViewe
                   type="checkbox"
                   checked={overlayOn}
                   onChange={(event) => applyOverlayOn(event.target.checked)}
-                  className="h-3.5 w-3.5 accent-cyan-300"
+                  className="h-3.5 w-3.5 accent-copper-300"
                 />
                 Region overlay
               </label>
@@ -186,7 +186,7 @@ export function NiivueViewer({ volumeUrl, overlayUrl, onLabelPick }: NiivueViewe
                   step={0.05}
                   value={overlayOpacity}
                   onChange={(event) => applyOverlayOpacity(Number(event.target.value))}
-                  className="w-24 accent-cyan-300"
+                  className="w-24 accent-copper-300"
                 />
               </label>
             </div>
@@ -194,7 +194,7 @@ export function NiivueViewer({ volumeUrl, overlayUrl, onLabelPick }: NiivueViewe
           <button
             type="button"
             onClick={toggleFullscreen}
-            className="ml-auto inline-flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/[0.03] px-2.5 py-1.5 text-xs text-slate-300 hover:border-cyan-300/40"
+            className="ml-auto inline-flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/[0.03] px-2.5 py-1.5 text-xs text-slate-300 hover:border-copper-300/40"
           >
             {isFullscreen ? <Minimize2 className="h-3.5 w-3.5" /> : <Maximize2 className="h-3.5 w-3.5" />}
             {isFullscreen ? "Exit fullscreen" : "Fullscreen"}

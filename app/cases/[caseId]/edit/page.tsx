@@ -15,7 +15,7 @@ export default async function EditCasePage({ params }: EditCasePageProps) {
     <AppShell>
       <div className="space-y-6">
         <div>
-          <Link href={`/cases/${caseId}`} className="text-sm text-cyan-200 hover:text-cyan-100">
+          <Link href={`/cases/${caseId}`} className="text-sm text-copper-200 hover:text-copper-100">
             ← Back to case
           </Link>
           <h1 className="mt-2 text-2xl font-semibold text-white">Edit case</h1>

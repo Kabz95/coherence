@@ -167,12 +167,12 @@ export function CreateCaseForm() {
         <p className="mb-2 text-xs text-slate-500">{clinicianEnteredDiagnosisCopy}</p>
         <div className="grid gap-1.5 sm:grid-cols-2">
           {DIAGNOSIS_OPTIONS.map((option) => (
-            <label key={option} className="flex cursor-pointer items-center gap-2 rounded-md border border-white/10 bg-black/25 px-3 py-2 text-sm text-slate-200 hover:border-cyan-300/40">
+            <label key={option} className="flex cursor-pointer items-center gap-2 rounded-md border border-white/10 bg-black/25 px-3 py-2 text-sm text-slate-200 hover:border-copper-300/40">
               <input
                 type="checkbox"
                 checked={diagnoses.includes(option)}
                 onChange={() => toggleDiagnosis(option)}
-                className="h-4 w-4 accent-cyan-300"
+                className="h-4 w-4 accent-copper-300"
               />
               {option}
             </label>
@@ -188,7 +188,7 @@ export function CreateCaseForm() {
           placeholder="Enter unlisted diagnosis"
         />
       </fieldset>
-      <button type="submit" disabled={busy} className="rounded-md bg-cyan-300 px-4 py-2 text-sm font-medium text-slate-950 disabled:cursor-not-allowed disabled:opacity-50">
+      <button type="submit" disabled={busy} className="rounded-md bg-copper-300 px-4 py-2 text-sm font-medium text-slate-950 disabled:cursor-not-allowed disabled:opacity-50">
         {busy ? "Creating..." : "Create case"}
       </button>
       {busy ? <ProgressBar label="Creating case" detail="Saving to Firestore" /> : null}

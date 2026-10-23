@@ -228,7 +228,7 @@ export function DashboardPageClient() {
         <div className="flex flex-wrap gap-2">
           <Link
             href="/cases"
-            className="inline-flex items-center gap-2 rounded-lg bg-cyan-300 px-4 py-2 text-sm font-semibold text-slate-950 hover:bg-cyan-200"
+            className="inline-flex items-center gap-2 rounded-lg bg-copper-300 px-4 py-2 text-sm font-semibold text-slate-950 hover:bg-copper-200"
           >
             <Plus className="h-4 w-4" aria-hidden /> New case
           </Link>
@@ -249,7 +249,7 @@ export function DashboardPageClient() {
           action={
             <Link
               href="/cases"
-              className="inline-flex items-center gap-2 rounded-xl bg-cyan-300 px-4 py-2 text-sm font-semibold text-slate-950 hover:bg-cyan-200"
+              className="inline-flex items-center gap-2 rounded-xl bg-copper-300 px-4 py-2 text-sm font-semibold text-slate-950 hover:bg-copper-200"
             >
               Go to cases
             </Link>
@@ -298,7 +298,7 @@ export function DashboardPageClient() {
             <section>
               <div className="mb-3 flex items-center justify-between">
                 <h2 className="text-lg font-semibold text-white">Recent cases</h2>
-                <Link href="/cases" className="text-sm text-cyan-200">
+                <Link href="/cases" className="text-sm text-copper-200">
                   View all
                 </Link>
               </div>

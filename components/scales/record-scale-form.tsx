@@ -145,7 +145,7 @@ export function RecordScaleForm({ onSave, saving = false }: RecordScaleFormProps
                         onClick={() => answer(item.number, option.value)}
                         className={`rounded-full border px-3 py-1 text-xs transition-colors ${
                           selected
-                            ? "border-sky-400 bg-sky-500/20 text-sky-200"
+                            ? "border-copper-400 bg-copper-500/20 text-copper-200"
                             : "border-neutral-700 text-neutral-400 hover:border-neutral-500 hover:text-neutral-200"
                         }`}
                       >
@@ -187,7 +187,7 @@ export function RecordScaleForm({ onSave, saving = false }: RecordScaleFormProps
               type="button"
               onClick={handleSave}
               disabled={!canSave}
-              className="rounded-lg bg-sky-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-sky-500 disabled:cursor-not-allowed disabled:opacity-40"
+              className="rounded-lg bg-copper-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-copper-500 disabled:cursor-not-allowed disabled:opacity-40"
             >
               {saving ? "Saving…" : "Save administration"}
             </button>

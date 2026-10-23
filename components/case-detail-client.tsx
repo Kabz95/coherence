@@ -121,7 +121,7 @@ export function CaseDetailClient({ caseId }: { caseId: string }) {
       <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-6 shadow-2xl shadow-black/20">
         <div className="flex flex-col justify-between gap-4 md:flex-row md:items-start">
           <div>
-            <p className="text-sm text-cyan-200">Patient case</p>
+            <p className="text-sm text-copper-200">Patient case</p>
             <h2 className="mt-1 text-2xl font-semibold text-white">{patientCase.displayName}</h2>
             <p className="mt-2 max-w-3xl text-sm text-slate-300">
               {patientCase.notes ?? "Clinician-entered context, neuro-data runs, longitudinal monitoring, and report access."}
@@ -133,13 +133,13 @@ export function CaseDetailClient({ caseId }: { caseId: string }) {
           <div className="flex shrink-0 flex-col gap-2 sm:flex-row">
             <Link
               href={`/cases/${patientCase.id}/edit`}
-              className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/10 px-4 py-2 text-sm font-medium text-slate-200 hover:border-cyan-300/40"
+              className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/10 px-4 py-2 text-sm font-medium text-slate-200 hover:border-copper-300/40"
             >
               Edit case
             </Link>
             <Link
               href={`/upload?caseId=${patientCase.id}`}
-              className="inline-flex items-center justify-center gap-2 rounded-xl bg-cyan-300 px-4 py-2 text-sm font-semibold text-slate-950 hover:bg-cyan-200"
+              className="inline-flex items-center justify-center gap-2 rounded-xl bg-copper-300 px-4 py-2 text-sm font-semibold text-slate-950 hover:bg-copper-200"
             >
               <Plus className="h-4 w-4" />
               Start new run
@@ -159,8 +159,8 @@ export function CaseDetailClient({ caseId }: { caseId: string }) {
                 onClick={() => setTab(item.id)}
                 className={`inline-flex items-center gap-2 rounded-xl border px-4 py-2 text-sm ${
                   tab === item.id
-                    ? "border-cyan-300 bg-cyan-300/15 text-cyan-50"
-                    : "border-white/10 bg-white/[0.03] text-slate-300 hover:border-cyan-300/40"
+                    ? "border-copper-300 bg-copper-300/15 text-copper-50"
+                    : "border-white/10 bg-white/[0.03] text-slate-300 hover:border-copper-300/40"
                 }`}
               >
                 <Icon className="h-4 w-4" />
@@ -177,7 +177,7 @@ export function CaseDetailClient({ caseId }: { caseId: string }) {
           <section className="rounded-2xl border border-white/10 bg-white/[0.03] p-6">
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-semibold text-white">Runs ({runs.length})</h3>
-              <Link href={`/upload?caseId=${patientCase.id}`} className="text-sm text-cyan-200 hover:text-cyan-100">
+              <Link href={`/upload?caseId=${patientCase.id}`} className="text-sm text-copper-200 hover:text-copper-100">
                 + New run
               </Link>
             </div>
@@ -189,7 +189,7 @@ export function CaseDetailClient({ caseId }: { caseId: string }) {
                   action={
                     <Link
                       href={`/upload?caseId=${patientCase.id}`}
-                      className="inline-flex items-center gap-2 rounded-xl bg-cyan-300 px-4 py-2 text-sm font-semibold text-slate-950 hover:bg-cyan-200"
+                      className="inline-flex items-center gap-2 rounded-xl bg-copper-300 px-4 py-2 text-sm font-semibold text-slate-950 hover:bg-copper-200"
                     >
                       <Plus className="h-4 w-4" />
                       Start new run
@@ -203,7 +203,7 @@ export function CaseDetailClient({ caseId }: { caseId: string }) {
                   <li key={run.id}>
                     <Link
                       href={`/cases/${patientCase.id}/runs/${run.id}`}
-                      className="flex items-center justify-between gap-4 rounded-xl border border-white/10 bg-black/25 p-4 hover:border-cyan-300/40"
+                      className="flex items-center justify-between gap-4 rounded-xl border border-white/10 bg-black/25 p-4 hover:border-copper-300/40"
                     >
                       <div>
                         <div className="font-medium text-white">{run.id}</div>

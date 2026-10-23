@@ -131,7 +131,7 @@ export function RunDetailClient({ caseId: caseIdOverride, runId: runIdOverride }
   return (
     <div className="space-y-6">
       <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-6 shadow-2xl shadow-black/20">
-        <p className="text-sm text-cyan-200">Run detail</p>
+        <p className="text-sm text-copper-200">Run detail</p>
         <h2 className="mt-1 text-2xl font-semibold text-white">{runId}</h2>
         <p className="mt-2 text-sm text-slate-300">
           Case: <span className="text-white">{caseId}</span>
@@ -140,7 +140,7 @@ export function RunDetailClient({ caseId: caseIdOverride, runId: runIdOverride }
         <div className="mt-4 flex flex-wrap gap-3">
           <Link
             href={`/reports/${runId}`}
-            className="inline-flex items-center gap-2 rounded-xl bg-cyan-300 px-4 py-2 text-sm font-semibold text-slate-950 hover:bg-cyan-200"
+            className="inline-flex items-center gap-2 rounded-xl bg-copper-300 px-4 py-2 text-sm font-semibold text-slate-950 hover:bg-copper-200"
           >
             <FileText className="h-4 w-4" />
             View report
@@ -172,8 +172,8 @@ export function RunDetailClient({ caseId: caseIdOverride, runId: runIdOverride }
         />
       ) : null}
 
-      <section className="rounded-lg border border-cyan-300/20 bg-panel/80 p-5">
-        <p className="text-sm text-cyan-200">Pipeline orchestrator</p>
+      <section className="rounded-lg border border-copper-300/20 bg-panel/80 p-5">
+        <p className="text-sm text-copper-200">Pipeline orchestrator</p>
         <div className="mt-2 flex flex-wrap items-start justify-between gap-3">
           <div>
             <h2 className="text-lg font-semibold text-white">{orchestrationLabel(run)}</h2>
@@ -192,7 +192,7 @@ export function RunDetailClient({ caseId: caseIdOverride, runId: runIdOverride }
         <div className="mt-5">
           <div className="h-3 overflow-hidden rounded-full border border-white/10 bg-white/[0.05]">
             <div
-              className="h-full rounded-full bg-cyan-300 transition-all duration-500"
+              className="h-full rounded-full bg-copper-300 transition-all duration-500"
               style={{ width: `${progress.percent}%` }}
               role="progressbar"
               aria-valuemin={0}
@@ -203,7 +203,7 @@ export function RunDetailClient({ caseId: caseIdOverride, runId: runIdOverride }
           </div>
           <div className="mt-3 flex flex-wrap items-center justify-between gap-3 text-sm text-slate-300">
             <span>Active job: {progress.activeStep?.stage.label ?? run?.currentStage ?? "None"}</span>
-            <span className="inline-flex items-center gap-2 text-cyan-100">
+            <span className="inline-flex items-center gap-2 text-copper-100">
               <TimerReset className="h-4 w-4" />
               Estimated remaining: {formatDuration(progress.remainingSeconds)}
             </span>
@@ -284,7 +284,7 @@ function RunReportSummary({ run, caseId }: { run: NeuroRun; caseId: string }) {
           {hasReport ? (
             <Link
               href={`/reports/${run.id}`}
-              className="inline-flex items-center gap-2 rounded-xl bg-cyan-300 px-4 py-2 text-sm font-semibold text-slate-950 hover:bg-cyan-200"
+              className="inline-flex items-center gap-2 rounded-xl bg-copper-300 px-4 py-2 text-sm font-semibold text-slate-950 hover:bg-copper-200"
             >
               <FileText className="h-4 w-4" />
               Full report

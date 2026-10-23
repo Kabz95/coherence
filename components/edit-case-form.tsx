@@ -463,12 +463,12 @@ export function EditCaseForm({ caseId }: { caseId: string }) {
         <p className="mt-1 text-xs text-slate-500">{clinicianEnteredDiagnosisCopy}</p>
         <div className="mt-4 grid gap-1.5 sm:grid-cols-2">
           {DIAGNOSIS_OPTIONS.map((option) => (
-            <label key={option} className="flex cursor-pointer items-center gap-2 rounded-md border border-white/10 bg-black/25 px-3 py-2 text-sm text-slate-200 hover:border-cyan-300/40">
+            <label key={option} className="flex cursor-pointer items-center gap-2 rounded-md border border-white/10 bg-black/25 px-3 py-2 text-sm text-slate-200 hover:border-copper-300/40">
               <input
                 type="checkbox"
                 checked={diagnoses.includes(option)}
                 onChange={() => toggleDiagnosis(option)}
-                className="h-4 w-4 accent-cyan-300"
+                className="h-4 w-4 accent-copper-300"
               />
               {option}
             </label>
@@ -508,7 +508,7 @@ export function EditCaseForm({ caseId }: { caseId: string }) {
               placeholder="Unlisted diagnosis, then Add"
               aria-label="Other diagnosis"
             />
-            <button type="button" onClick={addOtherDiagnosis} className="shrink-0 rounded-md border border-white/10 px-4 py-2 text-sm text-slate-200 hover:border-cyan-300/40">
+            <button type="button" onClick={addOtherDiagnosis} className="shrink-0 rounded-md border border-white/10 px-4 py-2 text-sm text-slate-200 hover:border-copper-300/40">
               Add
             </button>
           </div>
@@ -521,7 +521,7 @@ export function EditCaseForm({ caseId }: { caseId: string }) {
           <button
             type="button"
             onClick={() => setMedications((current) => [...current, emptyMedication()])}
-            className="rounded-md border border-white/10 px-3 py-1.5 text-sm text-slate-200 hover:border-cyan-300/40"
+            className="rounded-md border border-white/10 px-3 py-1.5 text-sm text-slate-200 hover:border-copper-300/40"
           >
             + Add medication
           </button>
@@ -603,7 +603,7 @@ export function EditCaseForm({ caseId }: { caseId: string }) {
           <button
             type="button"
             onClick={() => setTherapies((current) => [...current, emptyTherapy()])}
-            className="rounded-md border border-white/10 px-3 py-1.5 text-sm text-slate-200 hover:border-cyan-300/40"
+            className="rounded-md border border-white/10 px-3 py-1.5 text-sm text-slate-200 hover:border-copper-300/40"
           >
             + Add therapy
           </button>
@@ -729,7 +729,7 @@ export function EditCaseForm({ caseId }: { caseId: string }) {
           <button
             type="button"
             onClick={() => setLabs((current) => [...current, emptyLab()])}
-            className="rounded-md border border-white/10 px-3 py-1.5 text-sm text-slate-200 hover:border-cyan-300/40"
+            className="rounded-md border border-white/10 px-3 py-1.5 text-sm text-slate-200 hover:border-copper-300/40"
           >
             + Add lab entry
           </button>
@@ -780,7 +780,7 @@ export function EditCaseForm({ caseId }: { caseId: string }) {
           <button
             type="button"
             onClick={() => setSleepSummaries((current) => [...current, emptySleep()])}
-            className="rounded-md border border-white/10 px-3 py-1.5 text-sm text-slate-200 hover:border-cyan-300/40"
+            className="rounded-md border border-white/10 px-3 py-1.5 text-sm text-slate-200 hover:border-copper-300/40"
           >
             + Add sleep summary
           </button>
@@ -839,7 +839,7 @@ export function EditCaseForm({ caseId }: { caseId: string }) {
           <button
             type="button"
             onClick={() => setLifeEvents((current) => [...current, emptyLifeEvent()])}
-            className="rounded-md border border-white/10 px-3 py-1.5 text-sm text-slate-200 hover:border-cyan-300/40"
+            className="rounded-md border border-white/10 px-3 py-1.5 text-sm text-slate-200 hover:border-copper-300/40"
           >
             + Add life event
           </button>
@@ -886,7 +886,7 @@ export function EditCaseForm({ caseId }: { caseId: string }) {
           <button
             type="button"
             onClick={() => setCollateralEntries((current) => [...current, emptyCollateral()])}
-            className="rounded-md border border-white/10 px-3 py-1.5 text-sm text-slate-200 hover:border-cyan-300/40"
+            className="rounded-md border border-white/10 px-3 py-1.5 text-sm text-slate-200 hover:border-copper-300/40"
           >
             + Add collateral entry
           </button>
@@ -933,7 +933,7 @@ export function EditCaseForm({ caseId }: { caseId: string }) {
       </section>
 
       <div className="flex items-center gap-3">
-        <button type="submit" disabled={busy} className="rounded-md bg-cyan-300 px-4 py-2 text-sm font-medium text-slate-950 disabled:cursor-not-allowed disabled:opacity-50">
+        <button type="submit" disabled={busy} className="rounded-md bg-copper-300 px-4 py-2 text-sm font-medium text-slate-950 disabled:cursor-not-allowed disabled:opacity-50">
           {busy ? "Saving..." : "Save changes"}
         </button>
         {busy ? <ProgressBar label="Saving case" detail="Updating Firestore" /> : null}

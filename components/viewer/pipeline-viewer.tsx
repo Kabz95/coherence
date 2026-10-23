@@ -67,7 +67,7 @@ export function PipelineViewer({ run }: { run: NeuroRun }) {
   return (
     <section className="space-y-6 rounded-2xl border border-white/10 bg-white/[0.03] p-6">
       <div>
-        <p className="text-sm text-cyan-200">{modalityLabel} viewer</p>
+        <p className="text-sm text-copper-200">{modalityLabel} viewer</p>
         <h2 className="mt-1 text-lg font-semibold text-white">Pipeline outputs</h2>
         <p className="mt-1 text-sm text-slate-400">
           Viewer assets and measurement summaries produced by the {modalityLabel} pipeline. Values are

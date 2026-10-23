@@ -5,7 +5,7 @@ import { StatusChip } from "./status-chip";
 
 export function CaseCard({ patientCase, latestRun }: { patientCase: PatientCase; latestRun?: NeuroRun }) {
   return (
-    <Link href={`/cases/${patientCase.id}`} className="block rounded-lg border border-line bg-panel/80 p-5 shadow-glow transition hover:border-cyan-300/45 hover:bg-panel">
+    <Link href={`/cases/${patientCase.id}`} className="block rounded-lg border border-line bg-panel/80 p-5 shadow-glow transition hover:border-copper-300/45 hover:bg-panel">
       <div className="flex items-start justify-between gap-3">
         <div>
           <h2 className="text-lg font-semibold text-white">{patientCase.displayName}</h2>

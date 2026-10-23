@@ -16,7 +16,7 @@ export function LongitudinalPanel() {
         {trends.map((trend, index) => (
           <div key={trend} className="rounded-md border border-white/10 bg-white/[0.03] p-4">
             <div className="text-sm font-medium text-white">{trend}</div>
-            <div className="mt-4 h-16 rounded bg-gradient-to-r from-cyan-300/20 via-violet/15 to-gold/20" />
+            <div className="mt-4 h-16 rounded bg-copper-300/10" />
             <div className="mt-3 text-xs text-slate-400">Timepoint {index + 1} comparison placeholder</div>
           </div>
         ))}

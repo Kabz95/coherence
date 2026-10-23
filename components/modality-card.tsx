@@ -32,7 +32,7 @@ export function ModalityCard({
       aria-pressed={selected}
       title={disabled ? badge ?? "Not available in this build" : meta.title}
       className={`h-full rounded-lg border p-4 text-left transition ${
-        selected ? "border-cyan-300 bg-cyan-300/10" : "border-line bg-white/[0.03] hover:border-cyan-300/40"
+        selected ? "border-copper-300 bg-copper-300/10" : "border-line bg-white/[0.03] hover:border-copper-300/40"
       } ${disabled ? "cursor-not-allowed opacity-55 hover:border-line" : ""}`}
     >
       <div className="flex items-center justify-between gap-2">

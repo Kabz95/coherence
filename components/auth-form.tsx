@@ -54,10 +54,10 @@ export function AuthForm({ mode }: { mode: "sign-in" | "sign-up" }) {
   }
 
   return (
-    <main className="min-h-screen bg-slate-950 px-5 py-10 text-slate-100">
+    <main className="min-h-screen bg-midnight px-5 py-10 text-slate-100">
       <div className="mx-auto grid min-h-[calc(100vh-5rem)] max-w-6xl items-center gap-8 lg:grid-cols-2">
         <section>
-          <div className="inline-flex items-center gap-2 rounded-full border border-cyan-300/20 bg-cyan-300/10 px-3 py-1 text-sm text-cyan-100">
+          <div className="inline-flex items-center gap-2 rounded-full border border-copper-300/20 bg-copper-300/10 px-3 py-1 text-sm text-copper-100">
             <ShieldCheck className="h-4 w-4" />
             COHERENCE
           </div>
@@ -80,7 +80,7 @@ export function AuthForm({ mode }: { mode: "sign-in" | "sign-up" }) {
 
         <section className="rounded-3xl border border-white/10 bg-white/[0.04] p-6 shadow-2xl shadow-black/30">
           {!configured ? (
-            <div className="mb-4 space-y-3 rounded-2xl border border-cyan-300/25 bg-cyan-300/10 p-4 text-sm text-cyan-50">
+            <div className="mb-4 space-y-3 rounded-2xl border border-copper-300/25 bg-copper-300/10 p-4 text-sm text-copper-50">
               <p>
                 Firebase config is missing, so this build runs in <strong>demo mode</strong> with
                 seeded symposium cases. Continue with the demo clinician account to walk the full demo path.
@@ -92,7 +92,7 @@ export function AuthForm({ mode }: { mode: "sign-in" | "sign-up" }) {
                   router.push("/dashboard");
                   router.refresh();
                 }}
-                className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-cyan-300 px-4 py-2.5 text-sm font-semibold text-slate-950 hover:bg-cyan-200"
+                className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-copper-300 px-4 py-2.5 text-sm font-semibold text-slate-950 hover:bg-copper-200"
               >
                 <FlaskConical className="h-4 w-4" />
                 Continue with demo account
@@ -106,7 +106,7 @@ export function AuthForm({ mode }: { mode: "sign-in" | "sign-up" }) {
               <input
                 value={email}
                 onChange={(event) => setEmail(event.target.value)}
-                className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-cyan-300"
+                className="mt-2 w-full rounded-xl border border-white/10 bg-midnight px-3 py-2 text-sm text-white outline-none focus:border-copper-300"
                 autoComplete="email"
                 type="email"
                 required
@@ -119,7 +119,7 @@ export function AuthForm({ mode }: { mode: "sign-in" | "sign-up" }) {
               <input
                 value={password}
                 onChange={(event) => setPassword(event.target.value)}
-                className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-cyan-300"
+                className="mt-2 w-full rounded-xl border border-white/10 bg-midnight px-3 py-2 text-sm text-white outline-none focus:border-copper-300"
                 autoComplete={isSignUp ? "new-password" : "current-password"}
                 type="password"
                 minLength={6}
@@ -137,7 +137,7 @@ export function AuthForm({ mode }: { mode: "sign-in" | "sign-up" }) {
             <button
               type="submit"
               disabled={busy || !configured}
-              className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-cyan-300 px-4 py-2.5 text-sm font-semibold text-slate-950 hover:bg-cyan-200 disabled:cursor-not-allowed disabled:opacity-50"
+              className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-copper-300 px-4 py-2.5 text-sm font-semibold text-slate-950 hover:bg-copper-200 disabled:cursor-not-allowed disabled:opacity-50"
             >
               <Mail className="h-4 w-4" />
               {busy ? "Working..." : isSignUp ? "Create account" : "Sign in"}
@@ -165,7 +165,7 @@ export function AuthForm({ mode }: { mode: "sign-in" | "sign-up" }) {
             {isSignUp ? "Already have an account?" : "Need an account?"}{" "}
             <Link
               href={isSignUp ? "/sign-in" : "/sign-up"}
-              className="font-medium text-cyan-200 hover:text-cyan-100"
+              className="font-medium text-copper-200 hover:text-copper-100"
             >
               {isSignUp ? "Sign in" : "Create one"}
             </Link>

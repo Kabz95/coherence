@@ -28,7 +28,7 @@ export function ViewerPanel() {
               aria-selected={active === tab.id}
               onClick={() => setActive(tab.id)}
               className={`inline-flex items-center gap-2 rounded-md border px-3 py-2 text-sm ${
-                active === tab.id ? "border-cyan-300 bg-cyan-300/10 text-cyan-50" : "border-white/10 bg-white/[0.03] text-slate-300"
+                active === tab.id ? "border-copper-300 bg-copper-300/10 text-copper-50" : "border-white/10 bg-white/[0.03] text-slate-300"
               }`}
             >
               <TabIcon className="h-4 w-4" />
@@ -37,9 +37,9 @@ export function ViewerPanel() {
           );
         })}
       </div>
-      <div className="mt-5 min-h-[320px] rounded-lg border border-white/10 bg-[radial-gradient(circle_at_center,rgba(103,232,249,0.14),rgba(8,13,27,0.95)_52%)] p-6">
+      <div className="mt-5 min-h-[320px] rounded-lg border border-line bg-[#050607] p-6">
         <div className="flex h-full min-h-[280px] flex-col items-center justify-center text-center">
-          <Icon className="h-14 w-14 text-cyan-200" aria-hidden />
+          <Icon className="h-14 w-14 text-copper-200" aria-hidden />
           <h3 className="mt-4 text-lg font-semibold text-white">{activeTab.label} viewer placeholder</h3>
           <p className="mt-2 max-w-xl text-sm leading-6 text-slate-300">
             Future integration point for rendered assets. This panel is reserved for NiiVue volume/surface views, connectome visualizations, and MNE-derived EEG traces or spectrograms.

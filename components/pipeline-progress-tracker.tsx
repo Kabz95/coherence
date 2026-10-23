@@ -8,7 +8,7 @@ import { StatusChip } from "./status-chip";
 function barColor(status: string): string {
   if (status === "completed" || status === "skipped") return "bg-emerald-300";
   if (status === "failed") return "bg-rose-300";
-  if (status === "running") return "bg-cyan-300";
+  if (status === "running") return "bg-copper-300";
   if (status === "queued") return "bg-gold";
   return "bg-slate-600";
 }
@@ -25,7 +25,7 @@ export function PipelineProgressTracker({ run, nowMs }: { run: NeuroRun; nowMs: 
   }
 
   return (
-    <section className="rounded-lg border border-cyan-300/20 bg-panel/80 p-5">
+    <section className="rounded-lg border border-copper-300/20 bg-panel/80 p-5">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <h2 className="text-base font-semibold text-white">Pipeline progress</h2>
@@ -44,7 +44,7 @@ export function PipelineProgressTracker({ run, nowMs }: { run: NeuroRun; nowMs: 
       <div className="mt-5">
         <div className="h-3 overflow-hidden rounded-full border border-white/10 bg-white/[0.05]">
           <div
-            className="h-full rounded-full bg-cyan-300 transition-all duration-500"
+            className="h-full rounded-full bg-copper-300 transition-all duration-500"
             style={{ width: `${progress.percent}%` }}
             role="progressbar"
             aria-valuemin={0}
@@ -55,7 +55,7 @@ export function PipelineProgressTracker({ run, nowMs }: { run: NeuroRun; nowMs: 
         </div>
         <div className="mt-3 flex flex-wrap items-center justify-between gap-3 text-sm text-slate-300">
           <span>Active step: {progress.activeStep?.stage.label ?? "None"}</span>
-          <span className="inline-flex items-center gap-2 text-cyan-100">
+          <span className="inline-flex items-center gap-2 text-copper-100">
             <TimerReset className="h-4 w-4" />
             Estimated remaining: {formatDuration(progress.remainingSeconds)}
           </span>
