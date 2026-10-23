@@ -157,6 +157,128 @@ export function storagePathFromUri(uri: string): string {
   return slash >= 0 ? rest.slice(slash + 1) : rest;
 }
 
+export interface BrainRegionInfo {
+  regionId: string;
+  displayName: string;
+  hemisphere?: string;
+  categories: string[];
+  metrics: Array<{ label: string; value: string }>;
+  available?: boolean;
+  availabilityReason?: string;
+  warnings: string[];
+  evidenceRefCount: number;
+  meshObjectName?: string;
+  /** Numeric voxel-label ids this region may answer to in the label overlay. */
+  labelIds: number[];
+}
+
+export interface BrainViewerData {
+  regions: BrainRegionInfo[];
+  selectedMetricDefault?: string;
+}
+
+function strValue(value: unknown): string | undefined {
+  return typeof value === "string" && value.trim().length > 0 ? value : undefined;
+}
+
+function strListValue(value: unknown): string[] {
+  if (!Array.isArray(value)) return [];
+  return value.filter((item): item is string => typeof item === "string" && item.trim().length > 0);
+}
+
+function prettyMetricLabel(key: string): string {
+  return key.replace(/([a-z0-9])([A-Z])/g, "$1 $2").replace(/^./, (c) => c.toUpperCase());
+}
+
+function formatMetricValue(value: unknown): string | undefined {
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return Number.isInteger(value) ? value.toLocaleString() : value.toFixed(3).replace(/\.?0+$/, "");
+  }
+  if (typeof value === "string" && value.length > 0) return value;
+  if (typeof value === "boolean") return value ? "Yes" : "No";
+  const entry = asDict(value);
+  if (entry && typeof entry.value === "number" && Number.isFinite(entry.value)) {
+    const formatted = formatMetricValue(entry.value);
+    const unit = typeof entry.unit === "string" ? ` ${entry.unit}` : "";
+    return formatted !== undefined ? `${formatted}${unit}` : undefined;
+  }
+  return undefined;
+}
+
+function numericLabelId(value: unknown): number | undefined {
+  if (typeof value === "number" && Number.isFinite(value)) return Math.round(value);
+  if (typeof value === "string" && /^\d+$/.test(value.trim())) return Number(value.trim());
+  return undefined;
+}
+
+/**
+ * The backend's per-region viewer index (report.summary.morphometricReport
+ * .brainViewerData): display names, hemispheres, metrics, and the label ids
+ * the region answers to in the viewer's label overlay — the data behind
+ * click-a-region findings.
+ */
+export function readBrainViewerData(run: NeuroRun): BrainViewerData | null {
+  const summary = asDict(asDict(run.report)?.summary);
+  const morphometric = asDict(summary?.morphometricReport);
+  const raw = asDict(morphometric?.brainViewerData);
+  if (!raw || !Array.isArray(raw.regions)) return null;
+
+  const regions: BrainRegionInfo[] = [];
+  for (const item of raw.regions) {
+    const entry = asDict(item);
+    if (!entry) continue;
+    const displayName = strValue(entry.displayName) ?? strValue(entry.regionId) ?? strValue(entry.name);
+    if (!displayName) continue;
+
+    const labelIds: number[] = [];
+    const pushId = (value: unknown) => {
+      const id = numericLabelId(value);
+      if (id !== undefined && id > 0 && !labelIds.includes(id)) labelIds.push(id);
+    };
+    pushId(entry.regionId);
+    const clickTarget = asDict(entry.clickTarget);
+    if (clickTarget) {
+      pushId(clickTarget.labelId);
+      pushId(clickTarget.label);
+      pushId(clickTarget.id);
+      pushId(clickTarget.value);
+    }
+
+    const metricsDict = asDict(entry.metrics);
+    const metrics: Array<{ label: string; value: string }> = [];
+    if (metricsDict) {
+      pushId(metricsDict.labelId);
+      pushId(metricsDict.label);
+      for (const [key, value] of Object.entries(metricsDict)) {
+        const formatted = formatMetricValue(value);
+        if (formatted !== undefined) metrics.push({ label: prettyMetricLabel(key), value: formatted });
+        if (metrics.length >= 10) break;
+      }
+    }
+
+    regions.push({
+      regionId: strValue(entry.regionId) ?? displayName,
+      displayName,
+      hemisphere: strValue(entry.hemisphere),
+      categories: strListValue(entry.categories),
+      metrics,
+      available: typeof entry.available === "boolean" ? entry.available : undefined,
+      availabilityReason: strValue(entry.availabilityReason),
+      warnings: strListValue(entry.warnings),
+      evidenceRefCount: Array.isArray(entry.evidenceRefs) ? entry.evidenceRefs.length : 0,
+      meshObjectName: strValue(entry.meshObjectName),
+      labelIds,
+    });
+  }
+  if (!regions.length) return null;
+  return { regions, selectedMetricDefault: strValue(raw.selectedMetricDefault) };
+}
+
+/** Resolves a voxel label from the viewer's label overlay to its region, when the index carries the id. */
+export function resolveRegionByLabel(data: BrainViewerData, label: number): BrainRegionInfo | undefined {
+  return data.regions.find((region) => region.labelIds.includes(label));
+}
+
 export function readLiveViewerAssets(run: NeuroRun): LiveViewerAssets {
   const outs = stageOutputs(run, "structural_3d_prep");
 

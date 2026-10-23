@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { Maximize2, Minimize2 } from "lucide-react";
 import { Niivue, SLICE_TYPE } from "@niivue/niivue";
 
 /**
@@ -13,6 +14,8 @@ import { Niivue, SLICE_TYPE } from "@niivue/niivue";
 interface NiivueViewerProps {
   volumeUrl: string;
   overlayUrl?: string;
+  /** Called with the label-overlay voxel value whenever the crosshair settles on a labelled region. */
+  onLabelPick?: (label: number) => void;
 }
 
 type ViewerStatus = "loading" | "ready" | "error";
@@ -29,13 +32,34 @@ type ViewId = (typeof VIEW_BUTTONS)[number]["id"];
 
 const INITIAL_OVERLAY_OPACITY = 0.55;
 
-export function NiivueViewer({ volumeUrl, overlayUrl }: NiivueViewerProps) {
+export function NiivueViewer({ volumeUrl, overlayUrl, onLabelPick }: NiivueViewerProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const rootRef = useRef<HTMLDivElement | null>(null);
   const nvRef = useRef<Niivue | null>(null);
+  const labelPickRef = useRef(onLabelPick);
   const [status, setStatus] = useState<ViewerStatus>("loading");
   const [view, setView] = useState<ViewId>("multiplanar");
   const [overlayOn, setOverlayOn] = useState(true);
   const [overlayOpacity, setOverlayOpacity] = useState(INITIAL_OVERLAY_OPACITY);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
+  useEffect(() => {
+    labelPickRef.current = onLabelPick;
+  }, [onLabelPick]);
+
+  useEffect(() => {
+    const onChange = () => setIsFullscreen(document.fullscreenElement === rootRef.current);
+    document.addEventListener("fullscreenchange", onChange);
+    return () => document.removeEventListener("fullscreenchange", onChange);
+  }, []);
+
+  const toggleFullscreen = () => {
+    if (document.fullscreenElement) {
+      void document.exitFullscreen().catch(() => {});
+    } else {
+      rootRef.current?.requestFullscreen().catch(() => {});
+    }
+  };
 
   useEffect(() => {
     let cancelled = false;
@@ -59,6 +83,15 @@ export function NiivueViewer({ volumeUrl, overlayUrl }: NiivueViewerProps) {
         }
         await nv.loadVolumes(volumes);
         nv.setSliceType(SLICE_TYPE.MULTIPLANAR);
+        // Region picking: the overlay volume's voxel value at the crosshair
+        // is the region's label id; the parent resolves it to findings.
+        nv.onLocationChange = (location: unknown) => {
+          const values = (location as { values?: Array<{ value?: unknown }> } | null)?.values;
+          const overlayValue = values?.[1]?.value;
+          if (typeof overlayValue === "number" && Number.isFinite(overlayValue) && overlayValue > 0) {
+            labelPickRef.current?.(Math.round(overlayValue));
+          }
+        };
         if (!cancelled) setStatus("ready");
       } catch {
         if (!cancelled) setStatus("error");
@@ -104,9 +137,9 @@ export function NiivueViewer({ volumeUrl, overlayUrl }: NiivueViewerProps) {
   }
 
   return (
-    <div className="p-3">
+    <div ref={rootRef} className={isFullscreen ? "bg-[#04060f] p-4" : "p-3"}>
       <div className="relative">
-        <canvas ref={canvasRef} className="h-[440px] w-full rounded-lg bg-black/40" />
+        <canvas ref={canvasRef} className="h-[62vh] max-h-[780px] min-h-[440px] w-full rounded-lg bg-black/40" />
         {status === "loading" ? (
           <div className="absolute inset-0 flex items-center justify-center rounded-lg bg-black/50 text-sm text-slate-300">
             Loading volume…
@@ -158,11 +191,20 @@ export function NiivueViewer({ volumeUrl, overlayUrl }: NiivueViewerProps) {
               </label>
             </div>
           ) : null}
+          <button
+            type="button"
+            onClick={toggleFullscreen}
+            className="ml-auto inline-flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/[0.03] px-2.5 py-1.5 text-xs text-slate-300 hover:border-cyan-300/40"
+          >
+            {isFullscreen ? <Minimize2 className="h-3.5 w-3.5" /> : <Maximize2 className="h-3.5 w-3.5" />}
+            {isFullscreen ? "Exit fullscreen" : "Fullscreen"}
+          </button>
         </div>
       ) : null}
 
       <p className="mt-2 text-xs text-slate-500">
-        Drag to rotate in 3D render; scroll to move through slices in the planar views.
+        Click a coloured region in a slice view to see its findings below. Drag to rotate in
+        3D render; scroll to move through slices in the planar views.
       </p>
     </div>
   );

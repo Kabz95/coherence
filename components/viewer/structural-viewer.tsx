@@ -2,10 +2,11 @@
 
 import { useEffect, useMemo, useState } from "react";
 import dynamic from "next/dynamic";
-import { Box, Layers, Lock, ScanLine } from "lucide-react";
+import { Box, Layers, Lock, ScanLine, X } from "lucide-react";
 import { StatusChip } from "../status-chip";
 import { getFirebaseServices, isFirebaseConfigured } from "@/lib/firebase";
-import { readLiveViewerAssets } from "@/lib/live-outputs";
+import { readBrainViewerData, readLiveViewerAssets, resolveRegionByLabel } from "@/lib/live-outputs";
+import type { BrainRegionInfo } from "@/lib/live-outputs";
 import type { NeuroRun } from "@/lib/types";
 
 type StructuralTab = "slices" | "volume";
@@ -61,16 +62,39 @@ function AssetStatus({ run }: { run: NeuroRun }) {
  * marked as roadmap, per the structural-MRI-first MVP rule.
  */
 export function StructuralViewer({ run }: { run: NeuroRun }) {
-  const [tab, setTab] = useState<StructuralTab>("slices");
-  const assets = run.outputs?.visualizationAssets ?? {};
-  const sliceAsset = assets["slice_montage"] ?? assets["mri2d"];
-  const volumeAsset = assets["volume_render"] ?? assets["mri3d"];
-
   // Live backend layout: plane previews and the brain volume ride on the
   // 3D prep stage record (see lib/live-outputs.ts). Preview images live in
   // Firebase Storage, so resolve download URLs for the paths the job left.
   const liveAssets = useMemo(() => readLiveViewerAssets(run), [run]);
+  const brainData = useMemo(() => readBrainViewerData(run), [run]);
+  // The interactive viewer is the primary surface when a volume exists.
+  const [tab, setTab] = useState<StructuralTab>(() =>
+    readLiveViewerAssets(run).volumeStoragePath ? "volume" : "slices",
+  );
+  const assets = run.outputs?.visualizationAssets ?? {};
+  const sliceAsset = assets["slice_montage"] ?? assets["mri2d"];
+  const volumeAsset = assets["volume_render"] ?? assets["mri3d"];
   const [previewUrls, setPreviewUrls] = useState<Record<string, string>>({});
+
+  const [selectedRegion, setSelectedRegion] = useState<BrainRegionInfo | null>(null);
+  const [pickedLabel, setPickedLabel] = useState<number | null>(null);
+  const [hemisphereFilter, setHemisphereFilter] = useState<string>("all");
+
+  const handleLabelPick = (label: number) => {
+    const region = brainData ? resolveRegionByLabel(brainData, label) : undefined;
+    if (region) {
+      setSelectedRegion(region);
+      setPickedLabel(null);
+    } else {
+      setSelectedRegion(null);
+      setPickedLabel(label);
+    }
+  };
+
+  const selectRegion = (region: BrainRegionInfo) => {
+    setSelectedRegion(region);
+    setPickedLabel(null);
+  };
   useEffect(() => {
     let cancelled = false;
     const previews = liveAssets.previews;
@@ -172,7 +196,7 @@ export function StructuralViewer({ run }: { run: NeuroRun }) {
           }`}
         >
           <Box className="h-4 w-4" />
-          3D volume
+          Interactive viewer
         </button>
         {ROADMAP_TABS.map((roadmap) => (
           <span
@@ -228,7 +252,7 @@ export function StructuralViewer({ run }: { run: NeuroRun }) {
           // eslint-disable-next-line @next/next/no-img-element
           <img src={volumeAsset} alt="Structural MRI volume render" className="h-full max-h-[480px] w-full object-contain" />
         ) : liveAssets.volumeStoragePath && volumeUrls.volume ? (
-          <NiivueViewer volumeUrl={volumeUrls.volume} overlayUrl={volumeUrls.overlay} />
+          <NiivueViewer volumeUrl={volumeUrls.volume} overlayUrl={volumeUrls.overlay} onLabelPick={handleLabelPick} />
         ) : liveAssets.volumeStoragePath ? (
           <div className="flex min-h-[340px] flex-col items-center justify-center p-8 text-center">
             <Box className="h-12 w-12 text-cyan-200/70" aria-hidden />
@@ -254,6 +278,118 @@ export function StructuralViewer({ run }: { run: NeuroRun }) {
           </div>
         )}
       </div>
+
+      {selectedRegion ? (
+        <div className="mt-4 rounded-xl border border-cyan-300/25 bg-cyan-300/[0.05] p-4">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <h3 className="text-sm font-semibold text-white">{selectedRegion.displayName}</h3>
+              <p className="mt-0.5 text-xs text-slate-400">
+                {[selectedRegion.hemisphere, ...selectedRegion.categories].filter(Boolean).join(" · ") ||
+                  "Region findings from the backend viewer data."}
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setSelectedRegion(null)}
+              aria-label="Clear selected region"
+              className="rounded-md border border-white/10 p-1 text-slate-400 hover:border-cyan-300/40 hover:text-slate-200"
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
+          </div>
+          {selectedRegion.metrics.length ? (
+            <dl className="mt-3 grid gap-2 sm:grid-cols-2">
+              {selectedRegion.metrics.map((metric) => (
+                <div key={metric.label} className="flex items-baseline justify-between gap-3 rounded-lg bg-black/25 px-3 py-2 text-sm">
+                  <dt className="text-xs uppercase tracking-wide text-slate-400">{metric.label}</dt>
+                  <dd className="text-right text-slate-100">{metric.value}</dd>
+                </div>
+              ))}
+            </dl>
+          ) : (
+            <p className="mt-3 text-sm text-slate-400">No metrics were recorded for this region in this run.</p>
+          )}
+          {selectedRegion.available === false ? (
+            <p className="mt-3 text-sm text-amber-200/90">
+              Not available for this run{selectedRegion.availabilityReason ? `: ${selectedRegion.availabilityReason}` : "."}
+            </p>
+          ) : null}
+          {selectedRegion.warnings.length ? (
+            <ul className="mt-3 space-y-1 text-sm text-amber-200/90">
+              {selectedRegion.warnings.map((warning, index) => (
+                <li key={index}>• {warning}</li>
+              ))}
+            </ul>
+          ) : null}
+          {selectedRegion.evidenceRefCount ? (
+            <p className="mt-3 text-xs text-slate-500">
+              {selectedRegion.evidenceRefCount} evidence reference(s) recorded for this region.
+            </p>
+          ) : null}
+        </div>
+      ) : pickedLabel !== null ? (
+        <div className="mt-4 rounded-xl border border-white/10 bg-white/[0.03] p-4 text-sm text-slate-300">
+          Label {pickedLabel} at the crosshair is not matched in this run&apos;s region index.
+          Browse the region list below to see findings by region.
+        </div>
+      ) : null}
+
+      {brainData?.regions.length ? (
+        <div className="mt-4">
+          <h3 className="text-sm font-semibold text-slate-200">Brain regions</h3>
+          <p className="mt-0.5 text-xs text-slate-500">
+            Tap a region to see its findings — or click a coloured region in the interactive viewer.
+          </p>
+          {(() => {
+            const hemispheres = [...new Set(brainData.regions.map((region) => region.hemisphere).filter(Boolean))] as string[];
+            const visible =
+              hemisphereFilter === "all"
+                ? brainData.regions
+                : brainData.regions.filter((region) => region.hemisphere === hemisphereFilter);
+            return (
+              <>
+                {hemispheres.length > 1 ? (
+                  <div className="mt-2 flex flex-wrap gap-1">
+                    {["all", ...hemispheres].map((hemisphere) => (
+                      <button
+                        key={hemisphere}
+                        type="button"
+                        onClick={() => setHemisphereFilter(hemisphere)}
+                        aria-pressed={hemisphereFilter === hemisphere}
+                        className={`rounded-full border px-2.5 py-1 text-xs capitalize ${
+                          hemisphereFilter === hemisphere
+                            ? "border-cyan-300 bg-cyan-300/10 text-cyan-50"
+                            : "border-white/10 bg-white/[0.03] text-slate-300 hover:border-cyan-300/40"
+                        }`}
+                      >
+                        {hemisphere === "all" ? "All" : hemisphere}
+                      </button>
+                    ))}
+                  </div>
+                ) : null}
+                <div className="mt-2 grid max-h-56 grid-cols-2 gap-1.5 overflow-y-auto pr-1 sm:grid-cols-3">
+                  {visible.map((region) => (
+                    <button
+                      key={`${region.regionId}-${region.displayName}`}
+                      type="button"
+                      onClick={() => selectRegion(region)}
+                      aria-pressed={selectedRegion === region}
+                      className={`rounded-lg border px-2.5 py-1.5 text-left text-xs ${
+                        selectedRegion === region
+                          ? "border-cyan-300 bg-cyan-300/15 text-cyan-50"
+                          : "border-white/10 bg-white/[0.03] text-slate-300 hover:border-cyan-300/40"
+                      }`}
+                    >
+                      {region.displayName}
+                    </button>
+                  ))}
+                </div>
+              </>
+            );
+          })()}
+        </div>
+      ) : null}
 
       <AssetStatus run={run} />
 
