@@ -64,7 +64,7 @@ export function LongitudinalComparison({
         action={
           <Link
             href={`/upload?caseId=${caseId}`}
-            className="inline-flex items-center gap-2 rounded-xl bg-cyan-300 px-4 py-2 text-sm font-semibold text-slate-950 hover:bg-cyan-200"
+            className="inline-flex items-center gap-2 rounded-xl bg-copper-300 px-4 py-2 text-sm font-semibold text-slate-950 hover:bg-copper-200"
           >
             Start new run
           </Link>
@@ -119,7 +119,7 @@ export function LongitudinalComparison({
               return (
                 <div key={run.id} className="rounded-xl border border-white/10 bg-black/25 p-4">
                   <p className="text-xs uppercase tracking-wide text-slate-500">{label}</p>
-                  <Link href={`/cases/${caseId}/runs/${run.id}`} className="mt-1 block font-medium text-cyan-200 hover:text-cyan-100">
+                  <Link href={`/cases/${caseId}/runs/${run.id}`} className="mt-1 block font-medium text-copper-200 hover:text-copper-100">
                     {run.id}
                   </Link>
                   <dl className="mt-3 space-y-1 text-sm text-slate-300">
@@ -150,7 +150,7 @@ export function LongitudinalComparison({
                       <td className="px-4 py-3 font-medium text-white">{delta.label}</td>
                       <td className="px-4 py-3 text-slate-300">{delta.prior}</td>
                       <td className="px-4 py-3 text-slate-300">{delta.latest}</td>
-                      <td className="px-4 py-3 text-cyan-100">{delta.change}</td>
+                      <td className="px-4 py-3 text-copper-100">{delta.change}</td>
                     </tr>
                   ))}
                 </tbody>

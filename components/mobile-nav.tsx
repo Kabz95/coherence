@@ -26,7 +26,7 @@ export function MobileNav() {
   return (
     <nav
       aria-label="Primary"
-      className="fixed inset-x-0 bottom-0 z-30 border-t border-white/10 bg-slate-950/90 backdrop-blur-xl lg:hidden"
+      className="fixed inset-x-0 bottom-0 z-30 border-t border-line bg-midnight/90 backdrop-blur-xl lg:hidden print:hidden"
       style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
     >
       <div className="grid grid-cols-4">
@@ -39,7 +39,7 @@ export function MobileNav() {
               href={item.href}
               aria-current={active ? "page" : undefined}
               className={`flex flex-col items-center gap-1 px-2 py-2.5 text-[11px] transition-colors ${
-                active ? "text-cyan-300" : "text-slate-400 hover:text-slate-200"
+                active ? "text-copper-300" : "text-slate-400 hover:text-slate-200"
               }`}
             >
               <Icon className="h-5 w-5" aria-hidden />

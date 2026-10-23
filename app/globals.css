@@ -16,12 +16,20 @@ html {
 
 body {
   margin: 0;
-  background: #050813;
-  color: #e5edf7;
+  background: #08080a;
+  color: #eceae4;
 }
 
 a {
   text-decoration: none;
+}
+
+/* Direction A: serif display face (Spectral, Georgia fallback) for headings. */
+h1,
+h2,
+h3 {
+  font-family: var(--font-display), Georgia, "Times New Roman", serif;
+  letter-spacing: -0.01em;
 }
 
 @keyframes progress {
@@ -33,5 +41,56 @@ a {
   }
   100% {
     transform: translateX(360%);
+  }
+}
+
+/*
+ * Print — the report route prints as a clean paper document (Direction B):
+ * white page, dark ink text, no dark panels or app chrome (chrome elements
+ * also carry `print:hidden`), page-friendly tables.
+ */
+@media print {
+  @page {
+    margin: 18mm 14mm;
+  }
+
+  :root {
+    color-scheme: light;
+  }
+
+  html,
+  body {
+    background: #ffffff !important;
+    color: #111827 !important;
+  }
+
+  .report-paper {
+    background: #ffffff !important;
+    color: #111827 !important;
+    box-shadow: none !important;
+    border: none !important;
+    border-radius: 0 !important;
+    padding: 0 !important;
+    max-width: none !important;
+  }
+
+  .report-paper section,
+  .report-paper article {
+    break-inside: avoid;
+  }
+
+  .report-paper table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .report-paper th,
+  .report-paper td {
+    border-bottom: 1px solid #d1d5db;
+  }
+
+  .report-paper a {
+    color: #111827 !important;
+    text-decoration: none;
   }
 }

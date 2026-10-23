@@ -2,7 +2,7 @@ import type { RunStatus, StageStatus } from "@/lib/types";
 
 const styles: Record<RunStatus | StageStatus, string> = {
   draft: "border-slate-500/40 bg-slate-500/10 text-slate-200",
-  uploaded: "border-cyan-400/40 bg-cyan-400/10 text-cyan-100",
+  uploaded: "border-copper-400/40 bg-copper-400/10 text-copper-100",
   queued: "border-gold/50 bg-gold/10 text-gold",
   running: "border-violet/50 bg-violet/10 text-violet",
   completed: "border-emerald-400/40 bg-emerald-400/10 text-emerald-100",

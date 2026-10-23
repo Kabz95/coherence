@@ -20,7 +20,7 @@ export function Topbar() {
     <header className="sticky top-0 z-20 border-b border-line bg-midnight/90 px-4 py-3 backdrop-blur md:px-8">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <p className="text-xs uppercase tracking-[0.22em] text-cyan-100/55">Coherence workspace</p>
+          <p className="text-xs uppercase tracking-[0.22em] text-copper-100/55">Coherence workspace</p>
           <h1 className="text-lg font-semibold text-white">Neuroimaging decision-support shell</h1>
         </div>
         <div className="flex items-center gap-2">
@@ -38,7 +38,7 @@ export function Topbar() {
             <Plus className="h-4 w-4" aria-hidden />
             New case
           </Link>
-          <Link href="/upload" className="inline-flex items-center gap-2 rounded-md bg-cyan-300 px-3 py-2 text-sm font-medium text-slate-950 hover:bg-cyan-200">
+          <Link href="/upload" className="inline-flex items-center gap-2 rounded-md bg-copper-300 px-3 py-2 text-sm font-medium text-slate-950 hover:bg-copper-200">
             <UploadCloud className="h-4 w-4" aria-hidden />
             Upload
           </Link>

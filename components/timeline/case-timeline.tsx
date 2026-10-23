@@ -19,7 +19,7 @@ import { EmptyState } from "../ui/state";
 
 const kindMeta: Record<TimelineEventKind, { label: string; icon: typeof Pill; tint: string }> = {
   case_created: { label: "Case", icon: CalendarPlus, tint: "text-slate-300" },
-  run: { label: "Imaging run", icon: ScanLine, tint: "text-cyan-200" },
+  run: { label: "Imaging run", icon: ScanLine, tint: "text-copper-200" },
   medication: { label: "Medication", icon: Pill, tint: "text-violet-200" },
   symptom_scale: { label: "Symptom scale", icon: Activity, tint: "text-emerald-200" },
   therapy: { label: "Therapy", icon: Stethoscope, tint: "text-amber-200" },
@@ -124,8 +124,8 @@ export function CaseTimeline({
   return (
     <section aria-label="Unified clinical timeline" className="rounded-2xl border border-white/10 bg-white/[0.03] p-6">
       {referralQuestion ? (
-        <div className="mb-6 rounded-xl border border-cyan-300/25 bg-cyan-300/5 p-4">
-          <div className="text-xs font-semibold uppercase tracking-wide text-cyan-200">Referral question</div>
+        <div className="mb-6 rounded-xl border border-copper-300/25 bg-copper-300/5 p-4">
+          <div className="text-xs font-semibold uppercase tracking-wide text-copper-200">Referral question</div>
           <p className="mt-1 text-sm leading-6 text-white">“{referralQuestion.text}”</p>
           <p className="mt-1 text-xs text-slate-500">
             {referralQuestion.author ? `${referralQuestion.author} · ` : ""}{formatDate(referralQuestion.date)}
@@ -145,7 +145,7 @@ export function CaseTimeline({
               aria-pressed={stream === id}
               className={`rounded-full border px-3 py-1 text-xs ${
                 stream === id
-                  ? "border-cyan-300 bg-cyan-300/15 text-cyan-100"
+                  ? "border-copper-300 bg-copper-300/15 text-copper-100"
                   : "border-white/10 text-slate-400 hover:border-white/25 hover:text-slate-200"
               }`}
             >
@@ -202,7 +202,7 @@ export function CaseTimeline({
                       <span className="rounded-full bg-white/5 px-2 py-0.5">Spans a period</span>
                     ) : null}
                     {event.runId ? (
-                      <Link href={`/cases/${caseId}/runs/${event.runId}`} className="text-cyan-200 hover:text-cyan-100">
+                      <Link href={`/cases/${caseId}/runs/${event.runId}`} className="text-copper-200 hover:text-copper-100">
                         Open run →
                       </Link>
                     ) : null}

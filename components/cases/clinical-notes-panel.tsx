@@ -90,7 +90,7 @@ export function ClinicalNotesPanel({
             type="button"
             onClick={handleAdd}
             disabled={busy || !draft.trim()}
-            className="mt-3 inline-flex items-center gap-2 rounded-lg bg-cyan-300 px-4 py-2 text-sm font-semibold text-slate-950 hover:bg-cyan-200 disabled:cursor-not-allowed disabled:opacity-50"
+            className="mt-3 inline-flex items-center gap-2 rounded-lg bg-copper-300 px-4 py-2 text-sm font-semibold text-slate-950 hover:bg-copper-200 disabled:cursor-not-allowed disabled:opacity-50"
           >
             <Plus className="h-4 w-4" />
             {busy ? "Saving…" : "Save note"}
