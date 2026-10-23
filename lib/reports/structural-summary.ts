@@ -1,5 +1,6 @@
 import { reportInterpretationStatement } from "../clinical-copy";
-import { readLiveStructuralMeasurements } from "../live-outputs";
+import { readLiveStructuralMeasurements, readRegionalVolumeTable } from "../live-outputs";
+import { buildBackendReportSections, readBackendReport } from "./backend-report";
 import type {
   MeasurementDelta,
   NeuroRun,
@@ -45,6 +46,7 @@ function formatNumber(value: number | undefined, unit: string): string {
 /** Builds the structured, non-diagnostic sections of a structural MRI report. */
 export function buildStructuralReportSections(run: NeuroRun, patientCase?: PatientCase | null): ReportSection[] {
   const measurements = readStructural(run);
+  const backend = readBackendReport(run);
   const modalityLabel = run.modality.replace(/_/g, " ");
   const generatedAt = run.report?.generatedAt ?? run.updatedAt;
 
@@ -77,11 +79,14 @@ export function buildStructuralReportSections(run: NeuroRun, patientCase?: Patie
       id: "qc",
       title: "Quality-control summary",
       tone: measurements.qcFlags?.length ? "caution" : "info",
-      body:
-        measurements.qcFlags?.length
+      body: backend?.qcRows.length
+        ? "Quality-control results recorded by the backend for this run. Flags describe acquisition and processing quality only."
+        : measurements.qcFlags?.length
           ? "Automated quality-control flags for clinician review. Flags describe acquisition and processing quality only."
           : "Quality-control flags will appear here when backend processing completes.",
-      rows: (measurements.qcFlags ?? []).map((flag, index) => ({ label: `Flag ${index + 1}`, value: flag })),
+      rows: backend?.qcRows.length
+        ? backend.qcRows
+        : (measurements.qcFlags ?? []).map((flag, index) => ({ label: `Flag ${index + 1}`, value: flag })),
     },
     {
       id: "measurements",
@@ -98,6 +103,10 @@ export function buildStructuralReportSections(run: NeuroRun, patientCase?: Patie
       ],
     },
   ];
+
+  // The backend's composed report (regional table, normative scoring,
+  // synthesis, relevance, narrative, safety) follows the core sections.
+  sections.push(...buildBackendReportSections(backend, readRegionalVolumeTable(run)));
 
   if (measurements.acquisitionNotes) {
     sections.push({

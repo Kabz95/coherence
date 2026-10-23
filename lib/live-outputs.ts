@@ -16,7 +16,7 @@ import type { NeuroRun, StructuralMeasurements } from "./types";
 
 type Dict = Record<string, unknown>;
 
-function asDict(value: unknown): Dict | null {
+export function asDict(value: unknown): Dict | null {
   return value && typeof value === "object" && !Array.isArray(value) ? (value as Dict) : null;
 }
 
@@ -31,7 +31,12 @@ function stageOutputs(run: NeuroRun, jobKind: string): Dict | null {
   return stage ? asDict(stage.outputs) : null;
 }
 
-interface RegionalVolume {
+/** Public wrapper over the stage-manifest reader, for other report modules. */
+export function readStageOutputs(run: NeuroRun, jobKind: string): Dict | null {
+  return stageOutputs(run, jobKind);
+}
+
+export interface RegionalVolume {
   region: string;
   volumeMm3: number;
 }
@@ -90,6 +95,31 @@ export function readLiveStructuralMeasurements(run: NeuroRun): LiveStructuralMea
   }
 
   return measurements;
+}
+
+export interface RegionalVolumeTable {
+  /** Largest regions by volume (backend-curated list when present), capped at 20. */
+  largest: RegionalVolume[];
+  /** Total number of regions measured. */
+  total: number;
+}
+
+/** The regional volume table for report rendering: top regions + how many were measured. */
+export function readRegionalVolumeTable(run: NeuroRun): RegionalVolumeTable | null {
+  const summary = asDict(asDict(run.report)?.summary);
+  const morphometric = asDict(summary?.morphometricReport);
+  const regional = asDict(morphometric?.regionalMorphometry);
+  const curatedLargest = regionalVolumes(regional?.largestRegionsByVolume);
+  const summarized = regionalVolumes(regional?.regions);
+  const regionCount = regional?.regionCount;
+
+  const pool = summarized.length ? summarized : liveRegionalVolumes(run);
+  if (!pool.length && !curatedLargest.length) return null;
+  const sorted = [...pool].sort((a, b) => b.volumeMm3 - a.volumeMm3);
+  return {
+    largest: (curatedLargest.length ? curatedLargest : sorted).slice(0, 20),
+    total: typeof regionCount === "number" ? regionCount : sorted.length,
+  };
 }
 
 export interface LiveViewerPreview {

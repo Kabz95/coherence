@@ -290,6 +290,14 @@ export interface StructuralMeasurements {
   acquisitionNotes?: string;
 }
 
+/** A rich content block inside a report section: sub-heading, prose, bullets, or rows. */
+export interface ReportBlock {
+  heading?: string;
+  paragraphs?: string[];
+  bullets?: string[];
+  rows?: Array<{ label: string; value: string }>;
+}
+
 /** One rendered section of the unified structural report. */
 export interface ReportSection {
   id: string;
@@ -297,6 +305,8 @@ export interface ReportSection {
   body: string;
   /** Optional key/value rows rendered as a definition list. */
   rows?: Array<{ label: string; value: string }>;
+  /** Optional rich blocks for composed backend content (synthesis, reviews, narrative). */
+  blocks?: ReportBlock[];
   tone?: "neutral" | "caution" | "info";
 }
 
