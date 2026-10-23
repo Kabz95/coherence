@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import dynamic from "next/dynamic";
 import { Box, Layers, Lock, ScanLine } from "lucide-react";
 import { StatusChip } from "../status-chip";
 import { getFirebaseServices, isFirebaseConfigured } from "@/lib/firebase";
@@ -8,6 +9,11 @@ import { readLiveViewerAssets } from "@/lib/live-outputs";
 import type { NeuroRun } from "@/lib/types";
 
 type StructuralTab = "slices" | "volume";
+
+// WebGL viewer loads only when the 3D tab needs it (no SSR, lazy chunk).
+const NiivueViewer = dynamic(() => import("./niivue-viewer").then((mod) => mod.NiivueViewer), {
+  ssr: false,
+});
 
 const ROADMAP_TABS = [
   { id: "diffusion", label: "Diffusion / connectome" },
@@ -86,6 +92,40 @@ export function StructuralViewer({ run }: { run: NeuroRun }) {
         if (!cancelled) setPreviewUrls(resolved);
       } catch {
         // Storage unavailable in this shell; the asset inventory still shows.
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [liveAssets]);
+
+  // Resolve the volume + primary overlay paths for the interactive viewer.
+  const [volumeUrls, setVolumeUrls] = useState<{ volume?: string; overlay?: string }>({});
+  useEffect(() => {
+    let cancelled = false;
+    const volumePath = liveAssets.volumeStoragePath;
+    if (!volumePath || !isFirebaseConfigured()) return;
+    void (async () => {
+      try {
+        const { getDownloadURL, ref } = await import("firebase/storage");
+        const { storage } = await getFirebaseServices();
+        const resolved: { volume?: string; overlay?: string } = {};
+        try {
+          resolved.volume = await getDownloadURL(ref(storage, volumePath));
+        } catch {
+          // Leave unresolved; the tab keeps its attached-assets panel.
+        }
+        const overlayPath = liveAssets.overlayStoragePaths[0];
+        if (overlayPath) {
+          try {
+            resolved.overlay = await getDownloadURL(ref(storage, overlayPath));
+          } catch {
+            // The volume still renders without the overlay.
+          }
+        }
+        if (!cancelled) setVolumeUrls(resolved);
+      } catch {
+        // Storage unavailable in this shell; the tab keeps its panel.
       }
     })();
     return () => {
@@ -187,6 +227,8 @@ export function StructuralViewer({ run }: { run: NeuroRun }) {
         ) : volumeAsset ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={volumeAsset} alt="Structural MRI volume render" className="h-full max-h-[480px] w-full object-contain" />
+        ) : liveAssets.volumeStoragePath && volumeUrls.volume ? (
+          <NiivueViewer volumeUrl={volumeUrls.volume} overlayUrl={volumeUrls.overlay} />
         ) : liveAssets.volumeStoragePath ? (
           <div className="flex min-h-[340px] flex-col items-center justify-center p-8 text-center">
             <Box className="h-12 w-12 text-cyan-200/70" aria-hidden />
@@ -197,8 +239,8 @@ export function StructuralViewer({ run }: { run: NeuroRun }) {
               {liveAssets.overlayCount
                 ? ` and ${liveAssets.overlayCount} region overlay(s)`
                 : ""}{" "}
-              to this run. Interactive volume rendering (NiiVue) mounts at this integration
-              point; the rendered plane previews are under 2D slices.
+              to this run. The interactive viewer appears here once the volume file loads;
+              the rendered plane previews are under 2D slices.
             </p>
           </div>
         ) : (
