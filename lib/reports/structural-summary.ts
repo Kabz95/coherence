@@ -1,4 +1,5 @@
 import { reportInterpretationStatement } from "../clinical-copy";
+import { readLiveStructuralMeasurements } from "../live-outputs";
 import type {
   MeasurementDelta,
   NeuroRun,
@@ -9,22 +10,31 @@ import type {
 
 function readStructural(run: NeuroRun): StructuralMeasurements {
   const raw = run.outputs?.structural;
-  if (!raw || typeof raw !== "object") return {};
-  const get = (key: string): number | undefined => {
-    const value = (raw as Record<string, unknown>)[key];
-    return typeof value === "number" ? value : undefined;
-  };
-  const qcRaw = (raw as Record<string, unknown>).qcFlags;
-  return {
-    totalIntracranialVolumeMl: get("totalIntracranialVolumeMl"),
-    meanCorticalThicknessMm: get("meanCorticalThicknessMm"),
-    leftHippocampusMl: get("leftHippocampusMl"),
-    rightHippocampusMl: get("rightHippocampusMl"),
-    qcFlags: Array.isArray(qcRaw) ? qcRaw.filter((flag): flag is string => typeof flag === "string") : undefined,
-    acquisitionNotes:
+  const legacy: StructuralMeasurements = {};
+  if (raw && typeof raw === "object") {
+    const get = (key: string): number | undefined => {
+      const value = (raw as Record<string, unknown>)[key];
+      return typeof value === "number" ? value : undefined;
+    };
+    const qcRaw = (raw as Record<string, unknown>).qcFlags;
+    legacy.totalIntracranialVolumeMl = get("totalIntracranialVolumeMl");
+    legacy.meanCorticalThicknessMm = get("meanCorticalThicknessMm");
+    legacy.leftHippocampusMl = get("leftHippocampusMl");
+    legacy.rightHippocampusMl = get("rightHippocampusMl");
+    legacy.qcFlags = Array.isArray(qcRaw) ? qcRaw.filter((flag): flag is string => typeof flag === "string") : undefined;
+    legacy.acquisitionNotes =
       typeof (raw as Record<string, unknown>).acquisitionNotes === "string"
         ? ((raw as Record<string, unknown>).acquisitionNotes as string)
-        : undefined,
+        : undefined;
+  }
+  // The live backend publishes per-stage records instead of
+  // outputs.structural; fill any gaps from its regional measurements.
+  const live = readLiveStructuralMeasurements(run);
+  return {
+    ...legacy,
+    leftHippocampusMl: legacy.leftHippocampusMl ?? live.leftHippocampusMl,
+    rightHippocampusMl: legacy.rightHippocampusMl ?? live.rightHippocampusMl,
+    estimatedTissueVolumeMl: live.estimatedTissueVolumeMl,
   };
 }
 
@@ -79,6 +89,9 @@ export function buildStructuralReportSections(run: NeuroRun, patientCase?: Patie
       body: "Whole-brain and regional measurement summaries. Values are supplementary context for clinician review, not diagnostic markers.",
       rows: [
         { label: "Total intracranial volume", value: formatNumber(measurements.totalIntracranialVolumeMl, "mL") },
+        ...(measurements.estimatedTissueVolumeMl !== undefined
+          ? [{ label: "Estimated tissue volume", value: formatNumber(measurements.estimatedTissueVolumeMl, "mL") }]
+          : []),
         { label: "Mean cortical thickness", value: formatNumber(measurements.meanCorticalThicknessMm, "mm") },
         { label: "Left hippocampus", value: formatNumber(measurements.leftHippocampusMl, "mL") },
         { label: "Right hippocampus", value: formatNumber(measurements.rightHippocampusMl, "mL") },

@@ -281,6 +281,8 @@ export interface TimelineEvent {
 /** Structured structural-MRI measurements attached to a run's outputs. */
 export interface StructuralMeasurements {
   totalIntracranialVolumeMl?: number;
+  /** Brain tissue volume estimate; distinct from intracranial volume. */
+  estimatedTissueVolumeMl?: number;
   meanCorticalThicknessMm?: number;
   leftHippocampusMl?: number;
   rightHippocampusMl?: number;
