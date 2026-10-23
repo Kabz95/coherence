@@ -5,7 +5,7 @@ import { GENERAL_DISCLAIMER } from "@/lib/clinical-copy";
 import { buildStructuralReportSections } from "@/lib/reports/structural-summary";
 import { buildModalityReportSections } from "@/lib/reports/modality-summary";
 import { reportTitle } from "@/lib/repositories/reports";
-import type { NeuroRun, PatientCase } from "@/lib/types";
+import type { NeuroRun, PatientCase, ReportBlock } from "@/lib/types";
 import { EvidenceLedger } from "../evidence-ledger";
 
 const toneStyles: Record<string, string> = {
@@ -13,6 +13,41 @@ const toneStyles: Record<string, string> = {
   caution: "border-amber-300/25 bg-amber-300/[0.07]",
   info: "border-cyan-300/25 bg-cyan-300/[0.07]",
 };
+
+function ReportRows({ rows }: { rows: Array<{ label: string; value: string }> }) {
+  return (
+    <dl className="mt-4 space-y-2">
+      {rows.map((row) => (
+        <div key={row.label} className="flex flex-col gap-1 rounded-lg bg-black/25 px-3 py-2 sm:flex-row sm:items-baseline sm:justify-between">
+          <dt className="text-xs uppercase tracking-wide text-slate-400">{row.label}</dt>
+          <dd className="text-sm text-slate-100">{row.value}</dd>
+        </div>
+      ))}
+    </dl>
+  );
+}
+
+function ReportBlockView({ block }: { block: ReportBlock }) {
+  return (
+    <div className="mt-4">
+      {block.heading ? <h4 className="text-sm font-semibold text-slate-100">{block.heading}</h4> : null}
+      {block.paragraphs?.map((paragraph, index) => (
+        <p key={index} className="mt-2 text-sm leading-6 text-slate-300">{paragraph}</p>
+      ))}
+      {block.bullets?.length ? (
+        <ul className="mt-2 space-y-1.5 text-sm leading-6 text-slate-300">
+          {block.bullets.map((bullet, index) => (
+            <li key={index} className="flex gap-2">
+              <span aria-hidden className="text-cyan-300/70">•</span>
+              <span>{bullet}</span>
+            </li>
+          ))}
+        </ul>
+      ) : null}
+      {block.rows?.length ? <ReportRows rows={block.rows} /> : null}
+    </div>
+  );
+}
 
 /**
  * Unified non-diagnostic report: structured structural sections, evidence
@@ -50,20 +85,14 @@ export function UnifiedReport({ run, patientCase }: { run: NeuroRun; patientCase
         {sections.map((section) => (
           <section
             key={section.id}
-            className={`rounded-2xl border p-5 ${toneStyles[section.tone ?? "neutral"]}`}
+            className={`rounded-2xl border p-5 ${toneStyles[section.tone ?? "neutral"]} ${
+              section.blocks?.length ? "md:col-span-2" : ""
+            }`}
           >
             <h3 className="font-semibold text-white">{section.title}</h3>
             <p className="mt-2 text-sm leading-6 text-slate-300">{section.body}</p>
-            {section.rows?.length ? (
-              <dl className="mt-4 space-y-2">
-                {section.rows.map((row) => (
-                  <div key={row.label} className="flex flex-col gap-1 rounded-lg bg-black/25 px-3 py-2 sm:flex-row sm:items-baseline sm:justify-between">
-                    <dt className="text-xs uppercase tracking-wide text-slate-400">{row.label}</dt>
-                    <dd className="text-sm text-slate-100">{row.value}</dd>
-                  </div>
-                ))}
-              </dl>
-            ) : null}
+            {section.rows?.length ? <ReportRows rows={section.rows} /> : null}
+            {section.blocks?.map((block, index) => <ReportBlockView key={index} block={block} />)}
           </section>
         ))}
       </div>
