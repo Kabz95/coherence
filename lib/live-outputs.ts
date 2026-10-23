@@ -102,7 +102,21 @@ export interface LiveViewerAssets {
   /** Bucket-relative path of the brain-only NIfTI volume, when attached. */
   volumeStoragePath?: string;
   volumeFileName?: string;
+  /** Bucket-relative paths of region overlay volumes (label image first). */
+  overlayStoragePaths: string[];
   overlayCount: number;
+}
+
+/** Normalizes a live-backend file reference (string path/URI, or an object carrying one) to a bucket-relative path. */
+function toStoragePath(value: unknown): string | undefined {
+  if (typeof value === "string" && value.length > 0) return storagePathFromUri(value);
+  const entry = asDict(value);
+  if (!entry) return undefined;
+  for (const key of ["storagePath", "uri", "path", "url"]) {
+    const candidate = entry[key];
+    if (typeof candidate === "string" && candidate.length > 0) return storagePathFromUri(candidate);
+  }
+  return undefined;
 }
 
 /** gs://<bucket>/<path> → <path>; anything else is returned unchanged. */
@@ -136,6 +150,18 @@ export function readLiveViewerAssets(run: NeuroRun): LiveViewerAssets {
     volumeFileName = volumeStoragePath.split("/").pop() ?? rawVolume;
   }
 
-  const overlayCount = Array.isArray(outs?.niiVueOverlays) ? outs.niiVueOverlays.length : 0;
-  return { previews, volumeStoragePath, volumeFileName, overlayCount };
+  // Region overlays: the label image (regionLabelOverlayNifti) is the
+  // primary overlay; niiVueOverlays may repeat it or add more. Dedupe by
+  // path so the count and the viewer agree.
+  const overlayStoragePaths: string[] = [];
+  const pushOverlay = (path: string | undefined) => {
+    if (path && !overlayStoragePaths.includes(path)) overlayStoragePaths.push(path);
+  };
+  pushOverlay(toStoragePath(outs?.regionLabelOverlayNifti));
+  const rawOverlays = outs?.niiVueOverlays;
+  if (Array.isArray(rawOverlays)) {
+    for (const item of rawOverlays) pushOverlay(toStoragePath(item));
+  }
+
+  return { previews, volumeStoragePath, volumeFileName, overlayStoragePaths, overlayCount: overlayStoragePaths.length };
 }

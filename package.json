@@ -12,6 +12,7 @@
     "lint": "tsc --noEmit"
   },
   "dependencies": {
+    "@niivue/niivue": "^0.69.0",
     "@types/markdown-it": "^14.1.2",
     "acorn": "^8.16.0",
     "firebase": "^11.10.0",
