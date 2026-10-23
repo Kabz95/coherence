@@ -158,7 +158,9 @@ def _maybe_run_fastsurfer(context, manifest, metrics: dict, methods: dict, work)
         out_dir = work / "fastsurfer"
         result = subprocess.run(
             ["run_fastsurfer.sh", "--seg_only", "--t1", str(t1_path), "--sd", str(out_dir), "--sid", "subject"],
-            capture_output=True, text=True, timeout=3600,
+            # GPU Cloud Run jobs are capped at a 3600s task timeout; keep the
+            # FastSurfer subprocess below that so the fallback can still run.
+            capture_output=True, text=True, timeout=3000,
         )
         stats_path = out_dir / "subject" / "stats" / "aseg.stats"
         if result.returncode != 0 or not stats_path.exists():

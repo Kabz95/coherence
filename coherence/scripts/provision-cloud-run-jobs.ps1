@@ -12,7 +12,8 @@ $jobs = @(
   @{ Name = "coherence-converter"; Kind = "converter"; Region = $CpuRegion },
   @{ Name = "coherence-qc"; Kind = "qc"; Region = $CpuRegion },
   @{ Name = "coherence-structural-prep"; Kind = "structural_prep"; Region = $CpuRegion },
-  @{ Name = "coherence-structural-analysis"; Kind = "structural_analysis"; Region = $GpuRegion },
+  # GPU jobs are capped at a 3600s task timeout by Cloud Run; pin it explicitly.
+  @{ Name = "coherence-structural-analysis"; Kind = "structural_analysis"; Region = $GpuRegion; TaskTimeout = "3600s" },
   @{ Name = "coherence-structural-3d-prep"; Kind = "structural_3d_prep"; Region = $GpuRegion },
   @{ Name = "coherence-report-builder"; Kind = "report_builder"; Region = $CpuRegion },
   @{ Name = "coherence-diffusion-prep"; Kind = "diffusion_prep"; Region = $CpuRegion },
@@ -28,12 +29,15 @@ $jobs = @(
 
 foreach ($job in $jobs) {
   Write-Host "Deploying $($job.Name) in $($job.Region) for JOB_KIND=$($job.Kind)"
+  $timeoutArgs = @()
+  if ($job.TaskTimeout) { $timeoutArgs = @("--task-timeout=$($job.TaskTimeout)") }
   gcloud run jobs deploy $job.Name `
     --project=$ProjectId `
     --region=$job.Region `
     --image=$Image `
     --command=python `
     --args=worker.py `
+    @timeoutArgs `
     --set-env-vars="JOB_KIND=$($job.Kind),PROJECT_ID=$ProjectId,GCS_BUCKET=$Bucket,RUNS_COLLECTION=neuroRuns"
 }
 

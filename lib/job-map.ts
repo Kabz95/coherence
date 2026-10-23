@@ -64,7 +64,9 @@ export const JOB_DEFINITIONS: JobDefinition[] = [
     stage: "structural-analysis",
     region: GPU_REGION,
     requiresGpu: true,
-    estimatedDurationSeconds: 7200,
+    // Cloud Run caps GPU job task timeouts at 3600s (1 hour); this stage
+    // must never be configured above that or executions fail validation.
+    estimatedDurationSeconds: 3600,
     description: "Produce structural measurement summaries for clinician review.",
   },
   {

@@ -11,20 +11,27 @@ deploy_job() {
   local name="$1"
   local kind="$2"
   local region="$3"
+  local timeout="${4:-}"
   echo "Deploying ${name} in ${region} for JOB_KIND=${kind}"
+  local timeout_args=()
+  if [[ -n "${timeout}" ]]; then
+    timeout_args=(--task-timeout="${timeout}")
+  fi
   gcloud run jobs deploy "${name}" \
     --project="${PROJECT_ID}" \
     --region="${region}" \
     --image="${IMAGE}" \
     --command=python \
     --args=worker.py \
+    "${timeout_args[@]}" \
     --set-env-vars="JOB_KIND=${kind},PROJECT_ID=${PROJECT_ID},GCS_BUCKET=${BUCKET},RUNS_COLLECTION=neuroRuns"
 }
 
 deploy_job coherence-converter converter "${CPU_REGION}"
 deploy_job coherence-qc qc "${CPU_REGION}"
 deploy_job coherence-structural-prep structural_prep "${CPU_REGION}"
-deploy_job coherence-structural-analysis structural_analysis "${GPU_REGION}"
+# GPU jobs are capped at a 3600s task timeout by Cloud Run; pin it explicitly.
+deploy_job coherence-structural-analysis structural_analysis "${GPU_REGION}" "3600s"
 deploy_job coherence-structural-3d-prep structural_3d_prep "${GPU_REGION}"
 deploy_job coherence-report-builder report_builder "${CPU_REGION}"
 deploy_job coherence-diffusion-prep diffusion_prep "${CPU_REGION}"
