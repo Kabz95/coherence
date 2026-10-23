@@ -421,6 +421,118 @@ async function launchNextStageForRun(runId, requestedByUid) {
   return { runId, caseId, modality, launched, failed, missing };
 }
 
+const SUPPORTED_MODALITIES = ["structural_mri", "diffusion_mri", "eeg", "meg", "fmri", "multimodal"];
+
+async function loadRunOrThrow(runId) {
+  const ref = admin.firestore().collection(RUNS_COLLECTION).doc(runId);
+  const snap = await ref.get();
+
+  if (!snap.exists) {
+    throw new HttpsError("not-found", `Run ${runId} does not exist.`);
+  }
+
+  const run = snap.data();
+  if (!SUPPORTED_MODALITIES.includes(run.modality)) {
+    throw new HttpsError("failed-precondition", `Run ${runId} has unsupported modality '${run.modality}'.`);
+  }
+
+  return { ref, run };
+}
+
+// Refresh: reconcile stage state from job outputs, then advance the pipeline
+// if it is active but stalled with no stage running. Safe to call repeatedly;
+// it never resets or relaunches a stage that is already running or failed.
+async function refreshPipelineForRun(runId, requestedByUid) {
+  const { run } = await loadRunOrThrow(runId);
+  const jobs = pipelineForModality(run.modality);
+  const reconciliation = reconcileStagesFromOutputs(Array.isArray(run.stages) ? run.stages : [], jobs, run.outputs);
+
+  if (reconciliation.changed) {
+    const ref = admin.firestore().collection(RUNS_COLLECTION).doc(runId);
+    await ref.set(
+      {
+        stages: reconciliation.stages,
+        orchestration: {
+          ...(run.orchestration || {}),
+          jobs: buildOrchestrationJobs(jobs, run.orchestration?.launched || [], run.orchestration?.failed || [], run.orchestration?.missing || [], reconciliation.stages),
+        },
+        updatedAt: new Date().toISOString(),
+        serverUpdatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      },
+      { merge: true }
+    );
+  }
+
+  const orchestrationStatus = run.orchestration && run.orchestration.status;
+  const canAdvance =
+    ["queued", "launched"].includes(orchestrationStatus) || ["queued", "running"].includes(run.status);
+
+  if (!canAdvance) {
+    return { runId, caseId: run.caseId, modality: run.modality, refreshed: true, advanced: false, status: run.status };
+  }
+
+  const result = await launchNextStageForRun(runId, requestedByUid);
+  return { ...result, refreshed: true, advanced: !result.alreadyStarted && !result.complete };
+}
+
+// Restart: reset failed stages to pending (completed stages keep their
+// outputs) and relaunch from the first incomplete stage. Refused while any
+// stage is still running, so a live job is never double-launched.
+async function restartPipelineForRun(runId, requestedByUid) {
+  const { ref, run } = await loadRunOrThrow(runId);
+  const jobs = pipelineForModality(run.modality);
+  const stages = Array.isArray(run.stages) ? run.stages : [];
+
+  if (stages.some((stage) => stage.status === "running")) {
+    throw new HttpsError(
+      "failed-precondition",
+      "A pipeline stage is still running. Use refresh, or wait for it to finish before restarting."
+    );
+  }
+
+  const resetKinds = new Set();
+  const resetLabels = [];
+  const resetStages = stages.map((stage) => {
+    if (stage.status !== "failed") return stage;
+    const job = matchingJobForStage(stage, jobs);
+    if (job) resetKinds.add(job.jobKind);
+    resetLabels.push(stage.label || stage.id);
+    return { ...stage, status: "pending", error: null, startedAt: null, completedAt: null };
+  });
+
+  if (resetKinds.size === 0) {
+    return { runId, caseId: run.caseId, modality: run.modality, restarted: false, reason: "no-failed-stages" };
+  }
+
+  const launched = (run.orchestration?.launched || []).filter((entry) => !resetKinds.has(entry.jobKind));
+  const failed = (run.orchestration?.failed || []).filter((entry) => !resetKinds.has(entry.jobKind));
+  const missing = (run.orchestration?.missing || []).filter((entry) => !resetKinds.has(entry.jobKind));
+
+  await ref.set(
+    {
+      status: "running",
+      currentStage: "Pipeline restarting",
+      stages: resetStages,
+      orchestration: {
+        ...(run.orchestration || {}),
+        status: "launched",
+        jobs: buildOrchestrationJobs(jobs, launched, failed, missing, resetStages),
+        launched,
+        failed,
+        missing,
+        restartedAt: admin.firestore.FieldValue.serverTimestamp(),
+        restartedBy: requestedByUid,
+      },
+      updatedAt: new Date().toISOString(),
+      serverUpdatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    },
+    { merge: true }
+  );
+
+  const result = await launchNextStageForRun(runId, requestedByUid);
+  return { ...result, restarted: true, resetStages: resetLabels };
+}
+
 exports.startRunPipeline = onCall(
   {
     region: CPU_REGION,
@@ -438,6 +550,46 @@ exports.startRunPipeline = onCall(
     }
 
     return startPipelineForRun(runId, request.auth.uid);
+  }
+);
+
+exports.refreshRunPipeline = onCall(
+  {
+    region: CPU_REGION,
+    timeoutSeconds: 540,
+    memory: "512MiB",
+  },
+  async (request) => {
+    if (!request.auth) {
+      throw new HttpsError("unauthenticated", "Sign in before refreshing a Coherence run pipeline.");
+    }
+
+    const runId = request.data && request.data.runId;
+    if (!runId || typeof runId !== "string") {
+      throw new HttpsError("invalid-argument", "runId is required.");
+    }
+
+    return refreshPipelineForRun(runId, request.auth.uid);
+  }
+);
+
+exports.restartRunPipeline = onCall(
+  {
+    region: CPU_REGION,
+    timeoutSeconds: 540,
+    memory: "512MiB",
+  },
+  async (request) => {
+    if (!request.auth) {
+      throw new HttpsError("unauthenticated", "Sign in before restarting a Coherence run pipeline.");
+    }
+
+    const runId = request.data && request.data.runId;
+    if (!runId || typeof runId !== "string") {
+      throw new HttpsError("invalid-argument", "runId is required.");
+    }
+
+    return restartPipelineForRun(runId, request.auth.uid);
   }
 );
 
